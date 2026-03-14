@@ -268,40 +268,51 @@ export default function Terminal({ products: initialProducts, categories: initia
                         <p className="text-xs text-center">Pilih menu dari katalog untuk memulai</p>
                     </div>
                 ) : (
-                    <div className="space-y-1">
+                    <div className="space-y-3">
                         {cart.map((item) => (
                             <div
                                 key={item.id}
-                                className="group flex items-center gap-3 p-3 rounded-xl hover:bg-sidebar-accent transition-colors"
+                                className="rounded-xl bg-sidebar-accent/50 p-3 transition-colors"
                             >
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-sidebar-foreground truncate">{item.name}</p>
-                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                        Rp {item.price.toLocaleString('id-ID')}
-                                    </p>
+                                <div className="flex gap-3">
+                                    <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center">
+                                        {item.image ? (
+                                            <img src={item.image} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <Coffee className="w-7 h-7 text-muted-foreground" />
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-semibold text-sidebar-foreground line-clamp-2 leading-snug">{item.name}</p>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Rp {item.price.toLocaleString('id-ID')}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                    <button
-                                        onClick={() => updateQuantity(item.id, -1)}
-                                        aria-label="Kurangi jumlah"
-                                        className="w-6 h-6 rounded-full bg-sidebar/50 hover:bg-sidebar-accent text-sidebar-foreground flex items-center justify-center transition-[background-color,color]"
-                                    >
-                                        <Minus className="w-3 h-3" />
-                                    </button>
-                                    <span className="w-6 text-center text-sm font-bold text-sidebar-foreground">{item.quantity}</span>
-                                    <button
-                                        onClick={() => updateQuantity(item.id, 1)}
-                                        aria-label="Tambah jumlah"
-                                        className="w-6 h-6 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-[background-color,color]"
-                                    >
-                                        <Plus className="w-3 h-3" />
-                                    </button>
+                                <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-sidebar-border/50">
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => updateQuantity(item.id, -1)}
+                                            aria-label="Kurangi jumlah"
+                                            className="w-10 h-10 rounded-xl bg-muted text-sidebar-foreground flex items-center justify-center transition-colors active:bg-sidebar-accent touch-manipulation"
+                                        >
+                                            <Minus className="w-5 h-5" />
+                                        </button>
+                                        <span className="min-w-8 text-center text-sm font-bold text-sidebar-foreground tabular-nums">{item.quantity}</span>
+                                        <button
+                                            onClick={() => updateQuantity(item.id, 1)}
+                                            aria-label="Tambah jumlah"
+                                            className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center transition-colors active:bg-primary/80 touch-manipulation"
+                                        >
+                                            <Plus className="w-5 h-5" />
+                                        </button>
+                                    </div>
                                     <button
                                         onClick={() => removeFromCart(item.id)}
                                         aria-label="Hapus dari keranjang"
-                                        className="w-6 h-6 rounded-full bg-transparent hover:bg-destructive/10 text-muted-foreground hover:text-destructive flex items-center justify-center transition-[background-color,color,opacity] ml-1 opacity-0 group-hover:opacity-100"
+                                        className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center transition-colors active:bg-destructive/20 touch-manipulation"
                                     >
-                                        <Trash2 className="w-3 h-3" />
+                                        <Trash2 className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
@@ -350,29 +361,28 @@ export default function Terminal({ products: initialProducts, categories: initia
                     </div>
                 </div>
 
-                {/* Payment Buttons */}
-                <div className="grid grid-cols-2 gap-2">
+                {/* Payment Buttons — ukuran besar untuk layar sentuh */}
+                <div className="grid grid-cols-2 gap-3">
                     <button
                         disabled={cart.length === 0 || isProcessing}
                         onClick={() => handleCheckout('cash')}
-                        className="h-12 rounded-xl font-bold text-sm flex items-center justify-center gap-2
-                                   bg-secondary hover:bg-secondary/80 text-secondary-foreground
-                                   border border-border hover:border-accent
+                        className="h-14 rounded-xl font-bold text-base flex items-center justify-center gap-2
+                                   bg-secondary text-secondary-foreground border border-border
                                    disabled:opacity-40 disabled:cursor-not-allowed
-                                   transition-[background-color,border-color] duration-150"
+                                   transition-colors active:bg-secondary/80 touch-manipulation"
                     >
-                        {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Banknote className="w-4 h-4" />}
+                        {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Banknote className="w-5 h-5" />}
                         Tunai
                     </button>
                     <button
                         disabled={cart.length === 0 || isProcessing}
                         onClick={() => handleCheckout('qris')}
-                        className="h-12 rounded-xl font-bold text-sm flex items-center justify-center gap-2
-                                   bg-primary hover:bg-primary/90 text-primary-foreground
+                        className="h-14 rounded-xl font-bold text-base flex items-center justify-center gap-2
+                                   bg-primary text-primary-foreground
                                    disabled:opacity-40 disabled:cursor-not-allowed
-                                   transition-[background-color,shadow] duration-150 shadow-lg shadow-primary/20"
+                                   transition-colors active:bg-primary/80 shadow-lg shadow-primary/20 touch-manipulation"
                     >
-                        {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
+                        {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <QrCode className="w-5 h-5" />}
                         QRIS
                     </button>
                 </div>
@@ -385,7 +395,6 @@ export default function Terminal({ products: initialProducts, categories: initia
             <Head title="POS Terminal" />
 
             <style>{`
-                .product-card:hover .product-overlay { opacity: 1; }
                 .scrollbar-hide::-webkit-scrollbar { display: none; }
                 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
                 @keyframes fadeInUp {
@@ -468,7 +477,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                                     )}
                                 </button>
                             </SheetTrigger>
-                            <SheetContent side="right" className="p-0 w-full sm:w-[380px] bg-sidebar border-l border-sidebar-border">
+                            <SheetContent side="right" className="p-0 w-full max-w-[100vw] sm:w-[400px] bg-sidebar border-l border-sidebar-border">
                                 <CartPanel />
                             </SheetContent>
                         </Sheet>
@@ -488,7 +497,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                                         key={product.id}
                                         onClick={() => addToCart(product)}
                                         style={{ animationDelay: `${Math.min(i * 25, 300)}ms` }}
-                                        className={`product-card animate-fadeInUp group cursor-pointer bg-card rounded-xl sm:rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-[shadow,border-color,opacity] duration-200 hover:shadow-md hover:border-primary/30 hover:opacity-95 ${justAddedId === product.id ? 'animate-card-added' : ''}`}
+                                        className={`product-card animate-fadeInUp cursor-pointer bg-card rounded-xl sm:rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-[shadow,border-color] duration-200 active:shadow-md active:border-primary/30 ${justAddedId === product.id ? 'animate-card-added' : ''}`}
                                     >
                                         {/* Image */}
                                         <div className="aspect-square relative bg-muted/30 overflow-hidden">
@@ -498,17 +507,17 @@ export default function Terminal({ products: initialProducts, categories: initia
                                                     alt={product.name}
                                                     width={400}
                                                     height={400}
-                                                    className="object-cover w-full h-full transition-opacity duration-200 group-hover:opacity-95"
+                                                    className="object-cover w-full h-full"
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-muted/50 to-primary/5">
                                                     <Coffee className="w-10 h-10 text-primary/20" />
                                                 </div>
                                             )}
-                                            {/* Add overlay */}
-                                            <div className="product-overlay absolute inset-0 bg-primary/20 opacity-0 transition-opacity duration-200 flex items-center justify-center">
-                                                <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
-                                                    <Plus className="w-5 h-5" />
+                                            {/* Add overlay — selalu tampak untuk layar sentuh (tanpa hover) */}
+                                            <div className="absolute inset-0 bg-primary/15 flex items-center justify-center">
+                                                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
+                                                    <Plus className="w-6 h-6" />
                                                 </div>
                                             </div>
                                             {/* Price badge */}
@@ -524,10 +533,10 @@ export default function Terminal({ products: initialProducts, categories: initia
                                                 </div>
                                             )}
                                         </div>
-                                        {/* Info */}
-                                        <div className="p-2 sm:p-3">
-                                            <h3 className="font-bold text-sm text-foreground leading-tight truncate">{product.name}</h3>
-                                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{product.description}</p>
+                                        {/* Info — ruang cukup untuk nama 2 baris */}
+                                        <div className="p-3 min-h-16 flex flex-col justify-center">
+                                            <h3 className="font-bold text-sm text-foreground leading-snug line-clamp-2">{product.name}</h3>
+                                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{product.description}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -536,8 +545,8 @@ export default function Terminal({ products: initialProducts, categories: initia
                     </div>
                 </div>
 
-                {/* ── RIGHT: Cart Sidebar (desktop only) ───────────────────── */}
-                <div className="hidden lg:flex w-[340px] xl:w-[380px] shrink-0 flex-col border-l border-border">
+                {/* ── RIGHT: Cart Sidebar (desktop) — lebar cukup untuk nama produk ── */}
+                <div className="hidden lg:flex w-[360px] xl:w-[420px] shrink-0 flex-col border-l border-border">
                     <CartPanel />
                 </div>
             </div>
