@@ -75,8 +75,10 @@ class POSController extends Controller
 
             foreach ($orderItemsData as $itemData) {
                 $order->items()->create($itemData);
-                // Deduct stock after order item creation
-                Product::where('id', $itemData['product_id'])->decrement('stock', $itemData['quantity']);
+                // Deduct stock only for cash; for QRIS we deduct when payment succeeds (in Order::markAsPaid)
+                if ($validated['payment_method'] === 'cash') {
+                    Product::where('id', $itemData['product_id'])->decrement('stock', $itemData['quantity']);
+                }
             }
 
             return back()->with('order', $order->load('items.product'));

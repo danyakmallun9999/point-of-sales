@@ -84,7 +84,7 @@ export default function CategoryIndex({ categories }: Props) {
                     </div>
                     <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-amber-600 hover:bg-amber-700">
+                            <Button>
                                 <Plus className="mr-2 h-4 w-4" /> Add Category
                             </Button>
                         </DialogTrigger>
@@ -102,7 +102,7 @@ export default function CategoryIndex({ categories }: Props) {
                                         onChange={e => addForm.setData('name', e.target.value)}
                                         placeholder="Category Name"
                                     />
-                                    {addForm.errors.name && <p className="text-sm text-red-500">{addForm.errors.name}</p>}
+                                    {addForm.errors.name && <p className="text-sm text-destructive">{addForm.errors.name}</p>}
                                 </div>
                                 <DialogFooter>
                                     <Button type="submit" disabled={addForm.processing}>Save</Button>
@@ -126,7 +126,7 @@ export default function CategoryIndex({ categories }: Props) {
                                 <TableRow key={category.id}>
                                     <TableCell className="font-medium">
                                         <div className="flex items-center gap-2">
-                                            <Folder className="w-4 h-4 text-slate-400" />
+                                            <Folder className="w-4 h-4 text-muted-foreground shrink-0" />
                                             {category.name}
                                         </div>
                                     </TableCell>
@@ -135,7 +135,7 @@ export default function CategoryIndex({ categories }: Props) {
                                         <Button variant="ghost" size="icon" onClick={() => openEdit(category)}>
                                             <Edit className="w-4 h-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" className="text-red-500" onClick={() => handleDelete(category.id)}>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDelete(category.id)}>
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </TableCell>
@@ -167,7 +167,7 @@ export default function CategoryIndex({ categories }: Props) {
                                     value={editForm.data.name} 
                                     onChange={e => editForm.setData('name', e.target.value)}
                                 />
-                                {editForm.errors.name && <p className="text-sm text-red-500">{editForm.errors.name}</p>}
+                                {editForm.errors.name && <p className="text-sm text-destructive">{editForm.errors.name}</p>}
                             </div>
                             <DialogFooter>
                                 <Button type="submit" disabled={editForm.processing}>Update</Button>

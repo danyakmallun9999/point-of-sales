@@ -117,7 +117,7 @@ export default function ProductIndex({ products, categories }: Props) {
                     </div>
                     <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-amber-600 hover:bg-amber-700">
+                            <Button>
                                 <Plus className="mr-2 h-4 w-4" /> Add Product
                             </Button>
                         </DialogTrigger>
@@ -131,7 +131,7 @@ export default function ProductIndex({ products, categories }: Props) {
                                     <div className="grid gap-2">
                                         <Label htmlFor="name">Name</Label>
                                         <Input id="name" value={addForm.data.name} onChange={e => addForm.setData('name', e.target.value)} placeholder="Espresso" />
-                                        {addForm.errors.name && <p className="text-xs text-red-500">{addForm.errors.name}</p>}
+                                        {addForm.errors.name && <p className="text-xs text-destructive">{addForm.errors.name}</p>}
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="grid gap-2">
@@ -144,19 +144,19 @@ export default function ProductIndex({ products, categories }: Props) {
                                                     {categories.map(c => <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>)}
                                                 </SelectContent>
                                             </Select>
-                                            {addForm.errors.category_id && <p className="text-xs text-red-500">{addForm.errors.category_id}</p>}
+                                            {addForm.errors.category_id && <p className="text-xs text-destructive">{addForm.errors.category_id}</p>}
                                         </div>
                                         <div className="grid gap-2">
                                             <Label htmlFor="price">Price (Rp)</Label>
                                             <Input id="price" type="number" value={addForm.data.price} onChange={e => addForm.setData('price', e.target.value)} placeholder="25000" />
-                                            {addForm.errors.price && <p className="text-xs text-red-500">{addForm.errors.price}</p>}
+                                            {addForm.errors.price && <p className="text-xs text-destructive">{addForm.errors.price}</p>}
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="grid gap-2">
                                             <Label htmlFor="stock">Initial Stock</Label>
                                             <Input id="stock" type="number" value={addForm.data.stock} onChange={e => addForm.setData('stock', e.target.value)} placeholder="100" />
-                                            {addForm.errors.stock && <p className="text-xs text-red-500">{addForm.errors.stock}</p>}
+                                            {addForm.errors.stock && <p className="text-xs text-destructive">{addForm.errors.stock}</p>}
                                         </div>
                                         <div className="grid gap-2">
                                             <Label htmlFor="image">Image</Label>
@@ -192,11 +192,11 @@ export default function ProductIndex({ products, categories }: Props) {
                             {products.map((product) => (
                                 <TableRow key={product.id}>
                                     <TableCell>
-                                        <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden">
+                                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
                                             {product.image ? (
-                                                <img src={product.image} className="w-full h-full object-cover" />
+                                                <img src={product.image} className="w-full h-full object-cover" alt="" />
                                             ) : (
-                                                <Coffee className="w-5 h-5 text-slate-400" />
+                                                <Coffee className="w-5 h-5 text-muted-foreground" />
                                             )}
                                         </div>
                                     </TableCell>
@@ -207,7 +207,7 @@ export default function ProductIndex({ products, categories }: Props) {
                                     <TableCell>{product.category.name}</TableCell>
                                     <TableCell>Rp {product.price.toLocaleString()}</TableCell>
                                     <TableCell>
-                                        <span className={product.stock < 10 ? 'text-red-500 font-bold' : ''}>
+                                        <span className={product.stock < 10 ? 'text-destructive font-bold' : 'text-foreground'}>
                                             {product.stock} units
                                         </span>
                                     </TableCell>
@@ -215,7 +215,7 @@ export default function ProductIndex({ products, categories }: Props) {
                                         <Button variant="ghost" size="icon" onClick={() => openEdit(product)}>
                                             <Edit className="w-4 h-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" className="text-red-500" onClick={() => handleDelete(product.id)}>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDelete(product.id)}>
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </TableCell>

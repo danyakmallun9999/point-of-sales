@@ -52,14 +52,14 @@ export default function ReportIndex({ summary, topProducts, dailySales, filters 
                         <p className="text-muted-foreground">Analyze your sales performance and revenue.</p>
                     </div>
                     
-                    <div className="flex flex-wrap items-center gap-2 bg-white p-2 rounded-xl border shadow-sm">
-                        <div className="flex items-center gap-2 px-2 border-r">
-                            <Filter className="w-4 h-4 text-slate-400" />
-                            <Input type="date" className="border-none h-8 w-36 shadow-none focus-visible:ring-0" value={startDate} onChange={e => setStartDate(e.target.value)} />
-                            <span className="text-slate-300">-</span>
-                            <Input type="date" className="border-none h-8 w-36 shadow-none focus-visible:ring-0" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                    <div className="flex flex-wrap items-center gap-2 bg-card p-3 rounded-xl border border-border shadow-sm">
+                        <div className="flex items-center gap-2 pr-3 border-r border-border">
+                            <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
+                            <Input type="date" className="border-0 bg-transparent h-8 w-36 shadow-none focus-visible:ring-0" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                            <span className="text-muted-foreground">–</span>
+                            <Input type="date" className="border-0 bg-transparent h-8 w-36 shadow-none focus-visible:ring-0" value={endDate} onChange={e => setEndDate(e.target.value)} />
                         </div>
-                        <Button size="sm" onClick={handleFilter} className="h-8 bg-amber-600 hover:bg-amber-700">Apply</Button>
+                        <Button size="sm" onClick={handleFilter} className="h-8">Apply</Button>
                         <Button size="sm" variant="outline" onClick={handleExport} className="h-8">
                             <FileDown className="w-4 h-4 mr-2" /> Export CSV
                         </Button>
@@ -67,38 +67,38 @@ export default function ReportIndex({ summary, topProducts, dailySales, filters 
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="border-none shadow-sm shadow-black/5 bg-white">
-                        <CardHeader className="pb-2"><CardTitle className="text-xs font-bold text-slate-500 uppercase">Gross Sales</CardTitle></CardHeader>
+                    <Card className="border border-border/50 shadow-sm">
+                        <CardHeader className="pb-2"><CardTitle className="text-xs font-bold text-muted-foreground uppercase">Gross Sales</CardTitle></CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">Rp {parseFloat(summary.total_subtotal || '0').toLocaleString()}</div>
+                            <div className="text-2xl font-bold text-foreground">Rp {parseFloat(summary.total_subtotal || '0').toLocaleString()}</div>
                         </CardContent>
                     </Card>
-                    <Card className="border-none shadow-sm shadow-black/5 bg-white">
-                        <CardHeader className="pb-2"><CardTitle className="text-xs font-bold text-slate-500 uppercase">Total Discounts</CardTitle></CardHeader>
+                    <Card className="border border-border/50 shadow-sm">
+                        <CardHeader className="pb-2"><CardTitle className="text-xs font-bold text-muted-foreground uppercase">Total Discounts</CardTitle></CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-red-500">Rp {parseFloat(summary.total_discount || '0').toLocaleString()}</div>
+                            <div className="text-2xl font-bold text-destructive">Rp {parseFloat(summary.total_discount || '0').toLocaleString()}</div>
                         </CardContent>
                     </Card>
-                    <Card className="border-none shadow-sm shadow-black/5 bg-white">
-                        <CardHeader className="pb-2"><CardTitle className="text-xs font-bold text-slate-500 uppercase">Total Tax</CardTitle></CardHeader>
+                    <Card className="border border-border/50 shadow-sm">
+                        <CardHeader className="pb-2"><CardTitle className="text-xs font-bold text-muted-foreground uppercase">Total Tax</CardTitle></CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">Rp {parseFloat(summary.total_tax || '0').toLocaleString()}</div>
+                            <div className="text-2xl font-bold text-foreground">Rp {parseFloat(summary.total_tax || '0').toLocaleString()}</div>
                         </CardContent>
                     </Card>
-                    <Card className="border-none shadow-sm shadow-black/5 bg-amber-600 text-white">
-                        <CardHeader className="pb-2"><CardTitle className="text-xs font-bold text-amber-100 uppercase">Net Revenue</CardTitle></CardHeader>
+                    <Card className="border border-primary/20 shadow-sm bg-primary text-primary-foreground">
+                        <CardHeader className="pb-2"><CardTitle className="text-xs font-bold text-primary-foreground/90 uppercase">Net Revenue</CardTitle></CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">Rp {parseFloat(summary.total_revenue || '0').toLocaleString()}</div>
-                            <p className="text-[10px] text-amber-100 mt-1">From {summary.total_orders} successful orders</p>
+                            <p className="text-[10px] text-primary-foreground/80 mt-1">From {summary.total_orders} successful orders</p>
                         </CardContent>
                     </Card>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card className="border-none shadow-sm shadow-black/5">
+                    <Card className="border border-border/50 shadow-sm">
                         <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <TrendingUp className="w-5 h-5 text-amber-600" />
+                            <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+                                <TrendingUp className="w-5 h-5 text-primary shrink-0" />
                                 Top Selling Products
                             </CardTitle>
                         </CardHeader>
@@ -127,10 +127,10 @@ export default function ReportIndex({ summary, topProducts, dailySales, filters 
                         </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm shadow-black/5">
+                    <Card className="border border-border/50 shadow-sm">
                         <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <Download className="w-5 h-5 text-blue-600" />
+                            <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+                                <Download className="w-5 h-5 text-primary shrink-0" />
                                 Daily Sales History
                             </CardTitle>
                         </CardHeader>
@@ -145,8 +145,8 @@ export default function ReportIndex({ summary, topProducts, dailySales, filters 
                                 <TableBody>
                                     {dailySales.map((item, i) => (
                                         <TableRow key={i}>
-                                            <TableCell>{new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</TableCell>
-                                            <TableCell className="text-right font-bold text-green-600">Rp {parseFloat(item.total).toLocaleString()}</TableCell>
+                                            <TableCell className="text-foreground">{new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</TableCell>
+                                            <TableCell className="text-right font-bold text-primary">Rp {parseFloat(item.total).toLocaleString()}</TableCell>
                                         </TableRow>
                                     ))}
                                     {dailySales.length === 0 && (

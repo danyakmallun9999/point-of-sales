@@ -92,9 +92,12 @@ export default function UserIndex({ users }: Props) {
 
     const getRoleBadge = (role: string) => {
         switch (role) {
-            case 'admin': return <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-red-200"><ShieldAlert className="w-3 h-3 mr-1" /> Admin</Badge>;
-            case 'manager': return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200"><ShieldCheck className="w-3 h-3 mr-1" /> Manager</Badge>;
-            default: return <Badge variant="secondary" className="bg-slate-100 text-slate-700 border-slate-200"><User className="w-3 h-3 mr-1" /> Cashier</Badge>;
+            case 'admin':
+                return <Badge variant="secondary" className="bg-destructive/10 text-destructive border-border hover:bg-destructive/20"><ShieldAlert className="w-3 h-3 mr-1 shrink-0" /> Admin</Badge>;
+            case 'manager':
+                return <Badge variant="secondary" className="bg-primary/10 text-primary border-border hover:bg-primary/20"><ShieldCheck className="w-3 h-3 mr-1 shrink-0" /> Manager</Badge>;
+            default:
+                return <Badge variant="secondary"><User className="w-3 h-3 mr-1 shrink-0" /> Cashier</Badge>;
         }
     };
 
@@ -109,7 +112,7 @@ export default function UserIndex({ users }: Props) {
                     </div>
                     <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                         <DialogTrigger asChild>
-                            <Button className="bg-slate-900">
+                            <Button>
                                 <Plus className="mr-2 h-4 w-4" /> Add User
                             </Button>
                         </DialogTrigger>
@@ -123,12 +126,12 @@ export default function UserIndex({ users }: Props) {
                                     <div className="grid gap-2">
                                         <Label htmlFor="name">Full Name</Label>
                                         <Input id="name" value={addForm.data.name} onChange={e => addForm.setData('name', e.target.value)} />
-                                        {addForm.errors.name && <p className="text-xs text-red-500">{addForm.errors.name}</p>}
+                                        {addForm.errors.name && <p className="text-xs text-destructive">{addForm.errors.name}</p>}
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="email">Email Address</Label>
                                         <Input id="email" type="email" value={addForm.data.email} onChange={e => addForm.setData('email', e.target.value)} />
-                                        {addForm.errors.email && <p className="text-xs text-red-500">{addForm.errors.email}</p>}
+                                        {addForm.errors.email && <p className="text-xs text-destructive">{addForm.errors.email}</p>}
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="role">Role</Label>
@@ -153,7 +156,7 @@ export default function UserIndex({ users }: Props) {
                                             <Input id="password_confirmation" type="password" value={addForm.data.password_confirmation} onChange={e => addForm.setData('password_confirmation', e.target.value)} />
                                         </div>
                                     </div>
-                                    {addForm.errors.password && <p className="text-xs text-red-500">{addForm.errors.password}</p>}
+                                    {addForm.errors.password && <p className="text-xs text-destructive">{addForm.errors.password}</p>}
                                 </div>
                                 <DialogFooter>
                                     <Button type="submit" disabled={addForm.processing}>Create User</Button>
@@ -183,7 +186,7 @@ export default function UserIndex({ users }: Props) {
                                         <Button variant="ghost" size="icon" onClick={() => openEdit(user)}>
                                             <Edit className="w-4 h-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" className="text-red-500" onClick={() => handleDelete(user.id)}>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDelete(user.id)}>
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </TableCell>
@@ -220,7 +223,7 @@ export default function UserIndex({ users }: Props) {
                                     </Select>
                                 </div>
                                 <div className="pt-4 border-t">
-                                    <Label className="text-xs text-slate-500 uppercase font-bold">Change Password (Leave blank to keep current)</Label>
+                                    <Label className="text-xs text-muted-foreground uppercase font-bold">Change Password (Leave blank to keep current)</Label>
                                     <div className="grid grid-cols-2 gap-4 mt-2">
                                         <div className="grid gap-2">
                                             <Input id="edit-password" type="password" placeholder="New Password" value={editForm.data.password} onChange={e => editForm.setData('password', e.target.value)} />

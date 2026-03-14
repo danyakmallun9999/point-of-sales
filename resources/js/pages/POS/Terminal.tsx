@@ -1,19 +1,15 @@
-import { Head, router, usePage } from '@inertiajs/react';
-import { Coffee, Plus, Minus, Trash2, Search, QrCode, Banknote, Loader2, CheckCircle2, Wifi, WifiOff, RefreshCw, Printer, X } from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { Coffee, Plus, Minus, Trash2, Search, QrCode, Banknote, Loader2, CheckCircle2, WifiOff, RefreshCw, Printer, X, ShoppingBag } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createQrisCharge, checkStatus } from '@/actions/App/Http/Controllers/PaymentController';
 import { store as storeOrder } from '@/actions/App/Http/Controllers/POSController';
 import { AppShell } from '@/components/app-shell';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 import { syncCatalog, getOfflineCatalog, saveOfflineOrder, getUnsyncedOrders, markOrderSynced } from '@/lib/db';
-
 
 interface Product {
     id: number;
@@ -34,19 +30,19 @@ interface Props {
 }
 
 export default function Terminal({ products: initialProducts, categories: initialCategories }: Props) {
-    const { flash } = usePage().props as any;
-
     const [products, setProducts] = useState<Product[]>(initialProducts);
-    const [categories, setCategories] = useState<any[]>(initialCategories);
+    const [, setCategories] = useState<any[]>(initialCategories);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [discount, setDiscount] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
-    const [qrisData, setQrisData] = useState<{ qr_url?: string; status?: string; orderId?: number } | null>(null);
+    const [qrisData, setQrisData] = useState<{ qr_url?: string; status?: string; orderId?: number; midtransOrderId?: string; orderTotal?: number } | null>(null);
     const [showSuccess, setShowSuccess] = useState(false);
     const [completedOrder, setCompletedOrder] = useState<any>(null);
+    const [cartOpen, setCartOpen] = useState(false);
+    const [justAddedId, setJustAddedId] = useState<number | null>(null);
 
     useEffect(() => {
         if (isOnline) {
@@ -98,33 +94,10 @@ export default function Terminal({ products: initialProducts, categories: initia
         setIsSyncing(false);
     };
 
-    useEffect(() => {
-        let interval: any;
-
-        if (qrisData?.orderId) {
-            interval = setInterval(async () => {
-                try {
-                    const response = await fetch(checkStatus(qrisData.orderId!).url);
-                    const data = await response.json();
-                    
-                    if (data.payment_status === 'paid') {
-                        setQrisData(null);
-                        setCart([]);
-                        setDiscount(0);
-                        setShowSuccess(true);
-                        clearInterval(interval);
-                    }
-                } catch (error) {
-                    console.error('Polling error:', error);
-                }
-            }, 3000);
-        }
-
-        return () => clearInterval(interval);
-    }, [qrisData]);
-
 
     const addToCart = (product: Product) => {
+        setJustAddedId(product.id);
+        window.setTimeout(() => setJustAddedId(null), 500);
         setCart((prev) => {
             const existing = prev.find((item) => item.id === product.id);
             if (existing) {
@@ -151,8 +124,9 @@ export default function Terminal({ products: initialProducts, categories: initia
     };
 
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const tax = Math.max(0, (subtotal - discount) * 0.1); // 10% TAX
+    const tax = Math.max(0, (subtotal - discount) * 0.1);
     const total = Math.max(0, subtotal - discount + tax);
+    const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
     const filteredProducts = products.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -178,7 +152,6 @@ export default function Terminal({ products: initialProducts, categories: initia
             setCart([]);
             setDiscount(0);
             setShowSuccess(true);
-            // In offline mode we don't have the full order object from DB
             setCompletedOrder({ ...orderData, reference_number: 'OFFLINE-' + Date.now(), subtotal, tax_amount: tax, total_price: total });
             return;
         }
@@ -204,6 +177,40 @@ export default function Terminal({ products: initialProducts, categories: initia
         });
     };
 
+    // Polling for QRIS status
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+
+        if (qrisData?.orderId && qrisData?.status === 'pending') {
+            interval = setInterval(async () => {
+                try {
+                    const url = new URL(checkStatus(qrisData.orderId as any).url, window.location.origin);
+                    if (qrisData.midtransOrderId) {
+                        url.searchParams.append('midtrans_order_id', qrisData.midtransOrderId);
+                    }
+
+                    const response = await fetch(url.toString());
+                    const data = await response.json();
+
+                    if (data.payment_status === 'paid') {
+                        // Payment success: use order from checkStatus response for receipt
+                        setCompletedOrder(data.order ?? null);
+                        setShowSuccess(true);
+                        setQrisData(null);
+                        setCart([]);
+                        setDiscount(0);
+                        // Refresh products so stock and catalog are up to date
+                        router.reload({ only: ['products'] });
+                    }
+                } catch (e) {
+                    console.error('Polling error:', e);
+                }
+            }, 3000);
+        }
+
+        return () => clearInterval(interval);
+    }, [qrisData]);
+
     const initiateQris = async (orderId: number) => {
         try {
             const response = await fetch(createQrisCharge(orderId).url, {
@@ -215,300 +222,448 @@ export default function Terminal({ products: initialProducts, categories: initia
                 },
             });
             const data = await response.json();
-            
-            if (response.ok && data.actions) {
-                const qrAction = data.actions.find((a: any) => a.name === 'generate-qr-code');
-                setQrisData({ qr_url: qrAction?.url, status: data.transaction_status, orderId });
+
+            if (response.ok && (data.actions || data.order_id)) {
+                const qrAction = Array.isArray(data.actions) ? data.actions.find((a: any) => a.name === 'generate-qr-code') : null;
+                setQrisData({ 
+                    qr_url: qrAction?.url, 
+                    status: 'pending', 
+                    orderId,
+                    midtransOrderId: data.order_id,
+                    orderTotal: data.order_total ?? data.gross_amount,
+                });
             } else {
-                console.error('QRIS Error Response:', data);
                 alert(`QRIS Failed: ${data.error || data.status_message || 'Unknown error'}`);
             }
-        } catch (error) {
-            console.error('QRIS Fetch Error:', error);
+        } catch {
             alert('QRIS Request Failed. Check console for details.');
         } finally {
             setIsProcessing(false);
         }
     };
 
+    // ─── Reusable Cart Panel (used in sidebar + mobile sheet) ───────────────────
+    const CartPanel = () => (
+        <div className="flex flex-col h-full bg-sidebar">
+            {/* Cart Header */}
+            <div className="px-5 py-4 border-b border-sidebar-border">
+                <div className="flex items-center justify-between">
+                    <h2 className="font-sans text-lg font-bold text-sidebar-foreground tracking-wide">Order</h2>
+                    {cart.length > 0 && (
+                        <span className="text-xs bg-primary text-primary-foreground font-bold px-2 py-0.5 rounded-full">
+                            {totalItems} item{totalItems > 1 ? 's' : ''}
+                        </span>
+                    )}
+                </div>
+            </div>
+
+            {/* Cart Items */}
+            <div className="flex-1 overflow-auto px-5 py-4">
+                {cart.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground py-12">
+                        <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center">
+                            <Coffee className="w-7 h-7 opacity-40" />
+                        </div>
+                        <p className="text-sm font-medium">Keranjang kosong</p>
+                        <p className="text-xs text-center">Pilih menu dari katalog untuk memulai</p>
+                    </div>
+                ) : (
+                    <div className="space-y-1">
+                        {cart.map((item) => (
+                            <div
+                                key={item.id}
+                                className="group flex items-center gap-3 p-3 rounded-xl hover:bg-sidebar-accent transition-colors"
+                            >
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-sidebar-foreground truncate">{item.name}</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                        Rp {item.price.toLocaleString('id-ID')}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                    <button
+                                        onClick={() => updateQuantity(item.id, -1)}
+                                        aria-label="Kurangi jumlah"
+                                        className="w-6 h-6 rounded-full bg-sidebar/50 hover:bg-sidebar-accent text-sidebar-foreground flex items-center justify-center transition-[background-color,color]"
+                                    >
+                                        <Minus className="w-3 h-3" />
+                                    </button>
+                                    <span className="w-6 text-center text-sm font-bold text-sidebar-foreground">{item.quantity}</span>
+                                    <button
+                                        onClick={() => updateQuantity(item.id, 1)}
+                                        aria-label="Tambah jumlah"
+                                        className="w-6 h-6 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-[background-color,color]"
+                                    >
+                                        <Plus className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                        onClick={() => removeFromCart(item.id)}
+                                        aria-label="Hapus dari keranjang"
+                                        className="w-6 h-6 rounded-full bg-transparent hover:bg-destructive/10 text-muted-foreground hover:text-destructive flex items-center justify-center transition-[background-color,color,opacity] ml-1 opacity-0 group-hover:opacity-100"
+                                    >
+                                        <Trash2 className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Summary & Checkout */}
+            <div className="px-5 py-5 border-t border-sidebar-border space-y-4">
+                {/* Discount Field */}
+                <div className="flex items-center gap-3 bg-muted/30 rounded-xl px-3 py-2">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Diskon</Label>
+                    <div className="flex-1 flex items-center gap-1">
+                        <span className="text-muted-foreground text-sm font-medium">Rp</span>
+                        <Input
+                            type="number"
+                            className="h-7 border-0 bg-transparent text-right font-bold text-sidebar-foreground focus-visible:ring-0 p-0 text-sm"
+                            value={discount}
+                            onChange={(e) => setDiscount(Number(e.target.value))}
+                        />
+                    </div>
+                </div>
+
+                {/* Totals */}
+                <div className="space-y-2">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Subtotal</span>
+                        <span>Rp {subtotal.toLocaleString('id-ID')}</span>
+                    </div>
+                    {discount > 0 && (
+                        <div className="flex justify-between text-xs text-destructive">
+                            <span>Diskon</span>
+                            <span>− Rp {discount.toLocaleString('id-ID')}</span>
+                        </div>
+                    )}
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Pajak (10%)</span>
+                        <span>Rp {tax.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex justify-between items-baseline pt-2 border-t border-sidebar-border">
+                        <span className="text-sm font-bold text-sidebar-foreground">Total</span>
+                        <span className="text-xl font-black text-primary">
+                            Rp {total.toLocaleString('id-ID')}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Payment Buttons */}
+                <div className="grid grid-cols-2 gap-2">
+                    <button
+                        disabled={cart.length === 0 || isProcessing}
+                        onClick={() => handleCheckout('cash')}
+                        className="h-12 rounded-xl font-bold text-sm flex items-center justify-center gap-2
+                                   bg-secondary hover:bg-secondary/80 text-secondary-foreground
+                                   border border-border hover:border-accent
+                                   disabled:opacity-40 disabled:cursor-not-allowed
+                                   transition-[background-color,border-color] duration-150"
+                    >
+                        {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Banknote className="w-4 h-4" />}
+                        Tunai
+                    </button>
+                    <button
+                        disabled={cart.length === 0 || isProcessing}
+                        onClick={() => handleCheckout('qris')}
+                        className="h-12 rounded-xl font-bold text-sm flex items-center justify-center gap-2
+                                   bg-primary hover:bg-primary/90 text-primary-foreground
+                                   disabled:opacity-40 disabled:cursor-not-allowed
+                                   transition-[background-color,shadow] duration-150 shadow-lg shadow-primary/20"
+                    >
+                        {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
+                        QRIS
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 
     return (
         <AppShell>
             <Head title="POS Terminal" />
-            <div className="flex h-[calc(100vh-65px)] gap-4 p-4 overflow-hidden bg-slate-50 dark:bg-slate-950">
-                {/* Product Section */}
-                <div className="flex flex-col flex-1 gap-4">
-                    <Card className="border-none shadow-sm shadow-black/5 bg-white dark:bg-slate-900">
-                        <CardHeader className="py-4 px-6 flex flex-row items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div>
-                                    <CardTitle className="text-xl font-bold flex items-center gap-2">
-                                        <Coffee className="w-5 h-5 text-amber-600" />
-                                        Brew & Bytes
-                                    </CardTitle>
-                                    <CardDescription>Coffee Shop POS Terminal</CardDescription>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    {isOnline ? (
-                                        <Badge variant="outline" className="text-green-600 bg-green-50 border-green-200">
-                                            <Wifi className="w-3 h-3 mr-1" /> Online
-                                        </Badge>
-                                    ) : (
-                                        <Badge variant="outline" className="text-red-600 bg-red-50 border-red-200">
-                                            <WifiOff className="w-3 h-3 mr-1" /> Offline Mode
-                                        </Badge>
-                                    )}
-                                    {isSyncing && (
-                                        <Badge variant="outline" className="text-amber-600 animate-pulse bg-amber-50 border-amber-200">
-                                            <RefreshCw className="w-3 h-3 mr-1" /> Syncing...
-                                        </Badge>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="relative w-72">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                <Input
-                                    placeholder="Search products..."
-                                    className="pl-10 h-10 rounded-full border-slate-200 dark:border-slate-800"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                            </div>
-                        </CardHeader>
-                    </Card>
 
-                    <div className="flex-1 overflow-auto rounded-xl">
+            <style>{`
+                .product-card:hover .product-overlay { opacity: 1; }
+                .scrollbar-hide::-webkit-scrollbar { display: none; }
+                .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+                @keyframes fadeInUp {
+                    from { opacity: 0; transform: translateY(8px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes cartPop {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.15); }
+                    100% { transform: scale(1); }
+                }
+                @keyframes cardAdded {
+                    0% { box-shadow: 0 0 0 0 var(--color-primary); }
+                    50% { box-shadow: 0 0 0 4px var(--color-primary); }
+                    100% { box-shadow: 0 0 0 0 var(--color-primary); }
+                }
+                .animate-fadeInUp { animation: fadeInUp 0.35s ease-out forwards; }
+                .animate-cart-pop { animation: cartPop 0.35s ease-out; }
+                .animate-card-added { animation: cardAdded 0.5s ease-out; }
+            `}</style>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                            {filteredProducts.map((product) => (
-                                <Card
-                                    key={product.id}
-                                    className="group cursor-pointer hover:ring-2 hover:ring-amber-500/50 transition-all border-none shadow-sm shadow-black/5 bg-white dark:bg-slate-900"
-                                    onClick={() => addToCart(product)}
-                                >
-                                    <div className="aspect-square relative overflow-hidden rounded-t-xl bg-slate-100 dark:bg-slate-800">
-                                        {product.image ? (
-                                            <img src={product.image} alt={product.name} className="object-cover w-full h-full group-hover:scale-110 transition-transform" />
-                                        ) : (
-                                            <div className="flex items-center justify-center w-full h-full text-slate-400">
-                                                <Coffee className="w-12 h-12 opacity-20" />
-                                            </div>
-                                        )}
-                                        <div className="absolute top-2 right-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded-lg text-sm font-bold text-amber-700">
-                                            Rp {product.price.toLocaleString()}
-                                        </div>
-                                    </div>
-                                    <CardHeader className="p-4">
-                                        <CardTitle className="text-base font-semibold truncate">{product.name}</CardTitle>
-                                        <CardDescription className="line-clamp-1">{product.description}</CardDescription>
-                                    </CardHeader>
-                                </Card>
-                            ))}
+            <div className="flex flex-col lg:flex-row flex-1 min-h-dvh sm:min-h-0 h-full bg-background overflow-hidden font-sans">
+
+                {/* ── LEFT: Product Catalog (mobile-first) ───────────────────── */}
+                <div className="flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden">
+
+                    {/* Top Bar — compact on mobile */}
+                    <div className="bg-card border-b border-border px-3 py-2.5 sm:px-4 md:px-6 md:py-3 flex items-center gap-2 sm:gap-3 shrink-0">
+                        {/* Brand */}
+                        <div className="flex items-center gap-2 shrink-0">
+                            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-primary rounded-lg flex items-center justify-center">
+                                <Coffee className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-primary-foreground" />
+                            </div>
+                            <div className="hidden sm:block">
+                                <h1 className="text-base font-black text-foreground leading-none">Brew & Bytes</h1>
+                                <p className="text-[10px] text-muted-foreground font-medium tracking-widest uppercase">POS Terminal</p>
+                            </div>
                         </div>
+
+                        {/* Status badges */}
+                        <div className="hidden sm:flex items-center gap-2">
+                            {isOnline ? (
+                                <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full">
+                                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                                    Online
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 text-xs font-semibold text-destructive bg-destructive/5 border border-destructive/20 px-2.5 py-1 rounded-full">
+                                    <WifiOff className="w-3 h-3" /> Offline
+                                </span>
+                            )}
+                            {isSyncing && (
+                                <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/5 border border-primary/20 px-2.5 py-1 rounded-full animate-pulse">
+                                    <RefreshCw className="w-3 h-3 animate-spin" /> Syncing…
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Search */}
+                        <div className="relative flex-1 max-w-xs ml-auto md:ml-0">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                            <input
+                                type="text"
+                                placeholder="Cari menu…"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 pr-4 h-9 rounded-full bg-muted/50 border-0 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
+                            />
+                        </div>
+
+                        {/* Mobile cart trigger */}
+                        <Sheet open={cartOpen} onOpenChange={setCartOpen}>
+                            <SheetTrigger asChild>
+                                <button aria-label="Buka keranjang" className="lg:hidden relative w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0 transition-colors hover:bg-primary/90">
+                                    <ShoppingBag className="w-5 h-5 text-primary-foreground" />
+                                    {totalItems > 0 && (
+                                        <span key={totalItems} className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full bg-accent text-accent-foreground text-[10px] font-black flex items-center justify-center px-1 animate-cart-pop">
+                                            {totalItems}
+                                        </span>
+                                    )}
+                                </button>
+                            </SheetTrigger>
+                            <SheetContent side="right" className="p-0 w-full sm:w-[380px] bg-sidebar border-l border-sidebar-border">
+                                <CartPanel />
+                            </SheetContent>
+                        </Sheet>
                     </div>
 
-                </div>
-
-                {/* Cart Section */}
-                <div className="w-[400px] flex flex-col gap-4">
-                    <Card className="flex-1 flex flex-col border-none shadow-sm shadow-black/5 bg-white dark:bg-slate-900 overflow-hidden">
-                        <CardHeader className="py-4 px-6 border-b border-slate-100 dark:border-slate-800">
-                            <CardTitle className="text-lg">Current Order</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex-1 p-0 overflow-hidden">
-                            <div className="h-full px-6 py-4 overflow-auto">
-
-                                {cart.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center h-full text-slate-400 py-12">
-                                        <Coffee className="w-16 h-16 opacity-10 mb-4" />
-                                        <p>Your cart is empty</p>
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col gap-4">
-                                        {cart.map((item) => (
-                                            <div key={item.id} className="flex gap-3">
-                                                <div className="flex-1">
-                                                    <h4 className="font-semibold text-sm truncate">{item.name}</h4>
-                                                    <p className="text-xs text-slate-500">Rp {item.price.toLocaleString()}</p>
+                    {/* Product Grid — mobile-first: 2 cols, then 3–5 on larger */}
+                    <div className="flex-1 min-h-0 overflow-auto scrollbar-hide p-3 sm:p-4 md:p-6 pb-4">
+                        {filteredProducts.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-muted-foreground/50">
+                                <Coffee className="w-12 h-12 opacity-20" />
+                                <p className="text-sm">Produk tidak ditemukan</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
+                                {filteredProducts.map((product, i) => (
+                                    <div
+                                        key={product.id}
+                                        onClick={() => addToCart(product)}
+                                        style={{ animationDelay: `${Math.min(i * 25, 300)}ms` }}
+                                        className={`product-card animate-fadeInUp group cursor-pointer bg-card rounded-xl sm:rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-[shadow,border-color,opacity] duration-200 hover:shadow-md hover:border-primary/30 hover:opacity-95 ${justAddedId === product.id ? 'animate-card-added' : ''}`}
+                                    >
+                                        {/* Image */}
+                                        <div className="aspect-square relative bg-muted/30 overflow-hidden">
+                                            {product.image ? (
+                                                <img
+                                                    src={product.image}
+                                                    alt={product.name}
+                                                    width={400}
+                                                    height={400}
+                                                    className="object-cover w-full h-full transition-opacity duration-200 group-hover:opacity-95"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-muted/50 to-primary/5">
+                                                    <Coffee className="w-10 h-10 text-primary/20" />
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Button variant="outline" size="icon" className="h-7 w-7 rounded-full" onClick={() => updateQuantity(item.id, -1)}>
-                                                        <Minus className="w-3 h-3" />
-                                                    </Button>
-                                                    <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
-                                                    <Button variant="outline" size="icon" className="h-7 w-7 rounded-full" onClick={() => updateQuantity(item.id, 1)}>
-                                                        <Plus className="w-3 h-3" />
-                                                    </Button>
-                                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-500" onClick={() => removeFromCart(item.id)}>
-                                                        <Trash2 className="w-3 h-3" />
-                                                    </Button>
+                                            )}
+                                            {/* Add overlay */}
+                                            <div className="product-overlay absolute inset-0 bg-primary/20 opacity-0 transition-opacity duration-200 flex items-center justify-center">
+                                                <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
+                                                    <Plus className="w-5 h-5" />
                                                 </div>
                                             </div>
-                                        ))}
+                                            {/* Price badge */}
+                                            <div className="absolute bottom-2 left-2 bg-foreground/80 backdrop-blur-sm text-background text-xs font-black px-2 py-1 rounded-lg">
+                                                Rp {product.price.toLocaleString('id-ID')}
+                                            </div>
+                                            {/* Cart indicator — subtle bounce when this card was just added */}
+                                            {cart.find(c => c.id === product.id) && (
+                                                <div className={`absolute top-2 right-2 min-w-[20px] h-5 bg-accent text-accent-foreground rounded-full flex items-center justify-center px-1.5 shadow-sm ${justAddedId === product.id ? 'animate-cart-pop' : ''}`}>
+                                                    <span className="text-[10px] font-black">
+                                                        {cart.find(c => c.id === product.id)?.quantity}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {/* Info */}
+                                        <div className="p-2 sm:p-3">
+                                            <h3 className="font-bold text-sm text-foreground leading-tight truncate">{product.name}</h3>
+                                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{product.description}</p>
+                                        </div>
                                     </div>
-                                )}
+                                ))}
                             </div>
-                        </CardContent>
+                        )}
+                    </div>
+                </div>
 
-                        <div className="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800">
-                            <div className="space-y-2 mb-6">
-                                <div className="flex items-center justify-between gap-4 mb-4">
-                                    <Label className="text-xs font-bold text-slate-500 uppercase">Discount (Rp)</Label>
-                                    <Input 
-                                        type="number" 
-                                        className="h-8 w-32 text-right font-bold" 
-                                        value={discount} 
-                                        onChange={(e) => setDiscount(Number(e.target.value))}
-                                    />
-                                </div>
-                                <div className="flex justify-between text-sm text-slate-500">
-                                    <span>Subtotal</span>
-                                    <span>Rp {subtotal.toLocaleString()}</span>
-                                </div>
-                                {discount > 0 && (
-                                    <div className="flex justify-between text-sm text-red-500">
-                                        <span>Discount</span>
-                                        <span>- Rp {discount.toLocaleString()}</span>
-                                    </div>
-                                )}
-                                <div className="flex justify-between text-sm text-slate-500">
-                                    <span>Tax (10%)</span>
-                                    <span>Rp {tax.toLocaleString()}</span>
-                                </div>
-                                <Separator className="my-2" />
-                                <div className="flex justify-between text-lg font-bold">
-                                    <span>Total</span>
-                                    <span className="text-amber-600">Rp {total.toLocaleString()}</span>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <Button 
-                                    className="w-full h-12 bg-slate-900 hover:bg-slate-800" 
-                                    variant="default" 
-                                    disabled={cart.length === 0 || isProcessing}
-                                    onClick={() => handleCheckout('cash')}
-                                >
-                                    {isProcessing ? <Loader2 className="mr-2 w-4 h-4 animate-spin" /> : <Banknote className="mr-2 w-4 h-4" />}
-                                    Cash
-                                </Button>
-                                <Button 
-                                    className="w-full h-12 bg-amber-600 hover:bg-amber-700" 
-                                    variant="default" 
-                                    disabled={cart.length === 0 || isProcessing}
-                                    onClick={() => handleCheckout('qris')}
-                                >
-                                    {isProcessing ? <Loader2 className="mr-2 w-4 h-4 animate-spin" /> : <QrCode className="mr-2 w-4 h-4" />}
-                                    QRIS
-                                </Button>
-                            </div>
-                        </div>
-                    </Card>
+                {/* ── RIGHT: Cart Sidebar (desktop only) ───────────────────── */}
+                <div className="hidden lg:flex w-[340px] xl:w-[380px] shrink-0 flex-col border-l border-border">
+                    <CartPanel />
                 </div>
             </div>
 
-            {/* QRIS Modal */}
+            {/* ── QRIS Modal ──────────────────────────────────────────────── */}
             <Dialog open={!!qrisData} onOpenChange={() => { setQrisData(null); setCart([]); setDiscount(0); }}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Scan to Pay</DialogTitle>
-                        <DialogDescription>
-                            Please scan this QRIS code with your mobile banking or e-wallet app.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex flex-col items-center justify-center p-6 bg-white rounded-xl">
-                        {qrisData?.qr_url ? (
-                            <img src={qrisData.qr_url} alt="QRIS Code" className="w-64 h-64 shadow-lg border-8 border-white" />
-                        ) : (
-                            <div className="w-64 h-64 flex items-center justify-center bg-slate-100 rounded-lg">
-                                <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
-                            </div>
-                        )}
-                        <p className="mt-4 font-bold text-slate-900 border-2 border-slate-100 px-4 py-2 rounded-full">
-                            Rp {total.toLocaleString()}
-                        </p>
+                <DialogContent className="sm:max-w-sm bg-card border-border p-0 overflow-hidden">
+                    <div className="bg-primary px-6 pt-6 pb-8 text-center relative">
+                        <div className="absolute bottom-0 left-0 right-0 h-4 bg-card rounded-t-3xl" />
+                        <QrCode className="w-8 h-8 text-primary-foreground mx-auto mb-2" />
+                        <h2 className="text-xl font-black text-primary-foreground">Scan & Bayar</h2>
+                        <p className="text-primary-foreground/80 text-sm mt-1">Gunakan m-banking atau e-wallet</p>
+                    </div>
+                    <div className="px-6 pb-6 pt-2 flex flex-col items-center gap-4">
+                        <div className="bg-card rounded-2xl p-3 shadow-xl border border-border">
+                            {qrisData?.qr_url ? (
+                                <img src={qrisData.qr_url} alt="QRIS Code" width={224} height={224} className="w-56 h-56" />
+                            ) : (
+                                <div className="w-56 h-56 flex items-center justify-center bg-muted rounded-xl">
+                                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                </div>
+                            )}
+                        </div>
+                        <div className="text-center">
+                            <p className="text-primary text-xs font-semibold uppercase tracking-wider">Total Pembayaran</p>
+                            <p className="text-3xl font-black text-foreground mt-1">
+                                Rp {(qrisData?.orderTotal ?? total).toLocaleString('id-ID')}
+                            </p>
+                            {qrisData?.midtransOrderId && (
+                                <p className="text-[10px] text-muted-foreground mt-2 font-mono opacity-50">
+                                    Midtrans ID: {qrisData.midtransOrderId}
+                                </p>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>Menunggu konfirmasi pembayaran…</span>
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>
 
-            {/* Success & Receipt Modal */}
-            <Dialog open={showSuccess} onOpenChange={(open) => { if(!open) { setShowSuccess(false); setCompletedOrder(null); } }}>
-                <DialogContent className="sm:max-w-md bg-white p-0 overflow-hidden border-none shadow-2xl">
-                    <div className="bg-green-600 p-6 text-white flex flex-col items-center gap-2">
-                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                            <CheckCircle2 className="w-8 h-8 text-white" />
+            {/* ── Success & Receipt Modal ──────────────────────────────────── */}
+            <Dialog open={showSuccess} onOpenChange={(open) => { if (!open) { setShowSuccess(false); setCompletedOrder(null); } }}>
+                <DialogContent className="sm:max-w-sm bg-card p-0 overflow-hidden border-0 shadow-2xl rounded-2xl">
+                    {/* Header */}
+                    <div className="bg-primary px-6 pt-8 pb-10 text-center relative">
+                        <div className="w-14 h-14 bg-accent text-accent-foreground rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
+                            <CheckCircle2 className="w-8 h-8" />
                         </div>
-                        <h2 className="text-xl font-bold">Payment Successful</h2>
-                        <p className="text-green-100 text-sm">Order {completedOrder?.reference_number}</p>
+                        <h2 className="text-2xl font-black text-primary-foreground">Pembayaran Berhasil!</h2>
+                        <p className="text-primary-foreground/70 text-sm mt-1 font-mono">{completedOrder?.reference_number}</p>
+                        {/* Scallop bottom */}
+                        <div className="absolute bottom-0 left-0 right-0 h-5 bg-card"
+                             style={{ clipPath: 'ellipse(55% 100% at 50% 100%)' }} />
                     </div>
-                    
-                    <div className="p-6 space-y-6 max-h-[60vh] overflow-auto">
-                        <div className="text-center space-y-1">
-                            <h3 className="font-bold text-lg">Brew & Bytes Coffee</h3>
-                            <p className="text-xs text-slate-500">Jl. Teknologi No. 123, Indonesia</p>
-                            <p className="text-xs text-slate-500">{new Date().toLocaleString()}</p>
+
+                    {/* Receipt */}
+                    <div className="px-6 py-4 max-h-[55vh] overflow-auto">
+                        <div className="text-center mb-4">
+                            <p className="font-bold text-base text-foreground">Brew & Bytes Coffee</p>
+                            <p className="text-xs text-muted-foreground">Jl. Teknologi No. 123, Indonesia</p>
+                            <p className="text-xs text-muted-foreground">{new Date().toLocaleString('id-ID')}</p>
                         </div>
 
-                        <Separator className="border-dashed" />
-
-                        <div className="space-y-3">
+                        <div className="border-t border-dashed border-border pt-4 space-y-2">
                             {completedOrder?.items?.map((item: any, i: number) => (
                                 <div key={i} className="flex justify-between text-sm">
-                                    <span>{item.quantity}x {item.product?.name || 'Product'}</span>
-                                    <span className="font-medium">Rp {parseFloat(item.subtotal).toLocaleString()}</span>
+                                    <span className="text-muted-foreground">{item.quantity}× {item.product?.name || 'Product'}</span>
+                                    <span className="font-semibold text-foreground">Rp {parseFloat(item.subtotal).toLocaleString('id-ID')}</span>
                                 </div>
                             ))}
-                            {/* For offline orders items structure is different */}
                             {!completedOrder?.items?.[0]?.product && completedOrder?.items?.map((item: any, i: number) => {
                                 const p = products.find(prod => prod.id === item.product_id);
                                 return (
                                     <div key={i} className="flex justify-between text-sm">
-                                        <span>{item.quantity}x {p?.name || 'Item'}</span>
-                                        <span className="font-medium">Rp {(item.quantity * (p?.price || 0)).toLocaleString()}</span>
+                                        <span className="text-muted-foreground">{item.quantity}× {p?.name || 'Item'}</span>
+                                        <span className="font-semibold text-foreground">Rp {(item.quantity * (p?.price || 0)).toLocaleString('id-ID')}</span>
                                     </div>
                                 );
                             })}
                         </div>
 
-                        <Separator className="border-dashed" />
-
-                        <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-slate-500">Subtotal</span>
-                                <span>Rp {parseFloat(completedOrder?.subtotal || 0).toLocaleString()}</span>
+                        <div className="border-t border-dashed border-border mt-4 pt-4 space-y-1.5 text-sm">
+                            <div className="flex justify-between text-muted-foreground">
+                                <span>Subtotal</span>
+                                <span>Rp {parseFloat(completedOrder?.subtotal || 0).toLocaleString('id-ID')}</span>
                             </div>
                             {parseFloat(completedOrder?.discount_amount || 0) > 0 && (
-                                <div className="flex justify-between text-red-500">
-                                    <span>Discount</span>
-                                    <span>- Rp {parseFloat(completedOrder?.discount_amount).toLocaleString()}</span>
+                                <div className="flex justify-between text-destructive">
+                                    <span>Diskon</span>
+                                    <span>− Rp {parseFloat(completedOrder?.discount_amount).toLocaleString('id-ID')}</span>
                                 </div>
                             )}
-                            <div className="flex justify-between">
-                                <span className="text-slate-500">Tax (10%)</span>
-                                <span>Rp {parseFloat(completedOrder?.tax_amount || 0).toLocaleString()}</span>
+                            <div className="flex justify-between text-muted-foreground">
+                                <span>Pajak (10%)</span>
+                                <span>Rp {parseFloat(completedOrder?.tax_amount || 0).toLocaleString('id-ID')}</span>
                             </div>
-                            <div className="flex justify-between text-lg font-bold pt-2 border-t">
-                                <span>Total</span>
-                                <span>Rp {parseFloat(completedOrder?.total_price || 0).toLocaleString()}</span>
+                            <div className="flex justify-between text-base font-black pt-2 border-t border-border">
+                                <span className="text-foreground">Total</span>
+                                <span className="text-primary">Rp {parseFloat(completedOrder?.total_price || 0).toLocaleString('id-ID')}</span>
                             </div>
                         </div>
 
-                        <div className="pt-4 text-center">
-                            <p className="text-xs font-medium text-slate-400 italic">Thank you for your visit!</p>
-                        </div>
+                        <p className="text-center text-xs text-muted-foreground italic mt-4">— Terima kasih atas kunjungan Anda —</p>
                     </div>
 
-                    <div className="p-4 bg-slate-50 flex gap-3">
-                        <Button className="flex-1" variant="outline" onClick={() => setShowSuccess(false)}>
-                            <X className="w-4 h-4 mr-2" /> Close
-                        </Button>
-                        <Button className="flex-1 bg-slate-900" onClick={() => window.print()}>
-                            <Printer className="w-4 h-4 mr-2" /> Print Struk
-                        </Button>
+                    {/* Actions */}
+                    <div className="p-4 bg-muted/20 flex gap-2 border-t border-border">
+                        <button
+                            onClick={() => setShowSuccess(false)}
+                            aria-label="Tutup struk"
+                            className="flex-1 h-10 rounded-xl border border-border text-foreground hover:bg-muted text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+                        >
+                            <X className="w-4 h-4" /> Tutup
+                        </button>
+                        <button
+                            onClick={() => window.print()}
+                            aria-label="Cetak struk"
+                            className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+                        >
+                            <Printer className="w-4 h-4" /> Print Struk
+                        </button>
                     </div>
                 </DialogContent>
             </Dialog>
-
         </AppShell>
     );
 }

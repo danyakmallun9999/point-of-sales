@@ -41,9 +41,24 @@ class Order extends Model
     }
 
     /**
+     * Mark the order as paid and deduct stock (for QRIS; cash already deducted at creation).
+     */
+    public function markAsPaid(): bool
+    {
+        if ($this->payment_status === 'paid') {
+            return true;
+        }
+
+        $this->load('items');
+        foreach ($this->items as $item) {
+            \App\Models\Product::where('id', $item->product_id)->decrement('stock', $item->quantity);
+        }
+
+        return $this->update(['payment_status' => 'paid']);
+    }
+
+    /**
      * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
      */
     protected function casts(): array
     {

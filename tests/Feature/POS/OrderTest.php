@@ -25,10 +25,10 @@ test('cashier can create a cash order successfully', function () {
         ],
     ]);
 
-    $response->assertStatus(201);
+    $response->assertStatus(302);
     $this->assertDatabaseHas('orders', [
         'customer_name' => 'John Doe',
-        'total_price' => 40000,
+        'total_price' => 44000,
         'payment_status' => 'paid',
     ]);
 
