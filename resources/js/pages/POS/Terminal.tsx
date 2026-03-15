@@ -39,6 +39,14 @@ export default function Terminal({ products: initialProducts, categories: initia
     };
 
     const [products, setProducts] = useState<Product[]>(initialProducts);
+
+    // Sync state with props when initialProducts changes (e.g., after an order is stored)
+    useEffect(() => {
+        if (isOnline) {
+            setProducts(initialProducts);
+        }
+    }, [initialProducts, isOnline]);
+
     const [, setCategories] = useState<any[]>(initialCategories);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -218,6 +226,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                         setQrisData(null);
                         setCart([]);
                         setDiscount(0);
+                        // Reload only products to get updated stock
                         router.reload({ only: ['products'] });
                     }
                 } catch (e) {
