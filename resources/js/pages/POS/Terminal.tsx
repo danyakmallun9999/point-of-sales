@@ -527,14 +527,20 @@ export default function Terminal({ products: initialProducts, categories: initia
                                                     <Plus className="w-6 h-6" />
                                                 </div>
                                             </div>
-                                            <div className="absolute bottom-2 left-2 bg-foreground/80 backdrop-blur-sm text-background text-xs font-black px-2 py-1 rounded-lg">
-                                                Rp {product.price.toLocaleString('id-ID')}
+                                            <div className="absolute bottom-2 left-2 bg-card/95 backdrop-blur-md text-card-foreground text-[11px] font-black px-2 py-1 rounded-lg border border-border/50 shadow-sm flex items-center gap-1">
+                                                <span className="text-primary text-[9px]">Rp</span>
+                                                {product.price.toLocaleString('id-ID')}
                                             </div>
-                                            {cart.find(c => c.id === product.id) && (
-                                                <div className={`absolute top-2 right-2 min-w-[20px] h-5 bg-accent text-accent-foreground rounded-full flex items-center justify-center px-1.5 shadow-sm ${justAddedId === product.id ? 'animate-cart-pop' : ''}`}>
-                                                    <span className="text-[10px] font-black">{cart.find(c => c.id === product.id)?.quantity}</span>
-                                                </div>
-                                            )}
+                                            {(() => {
+                                                const cartItem = cart.find(c => c.id === product.id);
+                                                if (!cartItem) return null;
+                                                return (
+                                                    <div className={`absolute top-2 right-2 bg-primary text-primary-foreground flex items-center gap-1.5 px-2.5 py-1 rounded-full shadow-lg border border-primary-foreground/20 ${justAddedId === product.id ? 'animate-cart-pop' : ''}`}>
+                                                        <ShoppingBag className="w-3 h-3" />
+                                                        <span className="text-[11px] font-black leading-none">{cartItem.quantity}</span>
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                         <div className="p-3 min-h-16 flex flex-col justify-center">
                                             <h3 className="font-bold text-sm text-foreground leading-snug line-clamp-2">{product.name}</h3>
