@@ -558,7 +558,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                                                     </div>
                                                 )}
                                                 {!isOutOfStock && (
-                                                    <div className="absolute inset-0 bg-primary/15 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                                    <div className="absolute inset-0 bg-primary/5 flex items-center justify-center">
                                                         <div className={`w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg transition-transform ${justAddedId === product.id ? 'animate-cart-pop' : ''}`}>
                                                             <Plus className="w-6 h-6" />
                                                         </div>
