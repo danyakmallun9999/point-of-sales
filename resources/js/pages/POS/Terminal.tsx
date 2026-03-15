@@ -39,6 +39,7 @@ export default function Terminal({ products: initialProducts, categories: initia
     };
 
     const [products, setProducts] = useState<Product[]>(initialProducts);
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
 
     // Sync state with props when initialProducts changes (e.g., after an order is stored)
     useEffect(() => {
@@ -53,7 +54,6 @@ export default function Terminal({ products: initialProducts, categories: initia
     const [discount, setDiscount] = useState(0);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
-    const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [qrisData, setQrisData] = useState<{ qr_url?: string; status?: string; orderId?: number; midtransOrderId?: string; orderTotal?: number } | null>(null);
     const [showSuccess, setShowSuccess] = useState(false);
     const [completedOrder, setCompletedOrder] = useState<any>(null);
