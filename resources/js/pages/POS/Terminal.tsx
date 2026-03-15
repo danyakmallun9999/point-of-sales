@@ -31,6 +31,13 @@ interface Props {
 }
 
 export default function Terminal({ products: initialProducts, categories: initialCategories }: Props) {
+    const formatPrice = (price: number | string) => {
+        return Number(price).toLocaleString('id-ID', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        });
+    };
+
     const [products, setProducts] = useState<Product[]>(initialProducts);
     const [, setCategories] = useState<any[]>(initialCategories);
     const [cart, setCart] = useState<CartItem[]>([]);
@@ -310,7 +317,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-semibold text-sidebar-foreground line-clamp-2 leading-snug">{item.name}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">Rp {item.price.toLocaleString('id-ID')}</p>
+                                        <p className="text-xs text-muted-foreground mt-1">Rp {formatPrice(item.price)}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-sidebar-border/50">
@@ -365,21 +372,21 @@ export default function Terminal({ products: initialProducts, categories: initia
                 <div className="space-y-2">
                     <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Subtotal</span>
-                        <span>Rp {subtotal.toLocaleString('id-ID')}</span>
+                        <span>Rp {formatPrice(subtotal)}</span>
                     </div>
                     {discount > 0 && (
                         <div className="flex justify-between text-xs text-destructive">
                             <span>Diskon</span>
-                            <span>− Rp {discount.toLocaleString('id-ID')}</span>
+                            <span>− Rp {formatPrice(discount)}</span>
                         </div>
                     )}
                     <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Pajak (10%)</span>
-                        <span>Rp {tax.toLocaleString('id-ID')}</span>
+                        <span>Rp {formatPrice(tax)}</span>
                     </div>
                     <div className="flex justify-between items-baseline pt-2 border-t border-sidebar-border">
                         <span className="text-sm font-bold text-sidebar-foreground">Total</span>
-                        <span className="text-xl font-black text-primary">Rp {total.toLocaleString('id-ID')}</span>
+                        <span className="text-xl font-black text-primary">Rp {formatPrice(total)}</span>
                     </div>
                 </div>
 
@@ -559,7 +566,7 @@ export default function Terminal({ products: initialProducts, categories: initia
 
                                                 <div className="absolute bottom-2 left-2 bg-card/95 backdrop-blur-md text-card-foreground text-[11px] font-black px-2 py-1 rounded-lg border border-border/50 shadow-sm flex items-center gap-1">
                                                     <span className="text-primary text-[9px]">Rp</span>
-                                                    {product.price.toLocaleString('id-ID')}
+                                                    {formatPrice(product.price)}
                                                 </div>
 
                                                 {cartItem && (
@@ -625,7 +632,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                         <div className="text-center">
                             <p className="text-primary text-xs font-semibold uppercase tracking-wider">Total Pembayaran</p>
                             <p className="text-3xl font-black text-foreground mt-1">
-                                Rp {(qrisData?.orderTotal ?? total).toLocaleString('id-ID')}
+                                Rp {formatPrice(qrisData?.orderTotal ?? total)}
                             </p>
                             {qrisData?.midtransOrderId && (
                                 <p className="text-[10px] text-muted-foreground mt-2 font-mono opacity-50">
@@ -663,7 +670,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                             {completedOrder?.items?.map((item: any, i: number) => (
                                 <div key={i} className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">{item.quantity}× {item.product?.name || 'Product'}</span>
-                                    <span className="font-semibold text-foreground">Rp {parseFloat(item.subtotal).toLocaleString('id-ID')}</span>
+                                    <span className="font-semibold text-foreground">Rp {formatPrice(parseFloat(item.subtotal))}</span>
                                 </div>
                             ))}
                             {!completedOrder?.items?.[0]?.product && completedOrder?.items?.map((item: any, i: number) => {
@@ -671,7 +678,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                                 return (
                                     <div key={i} className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">{item.quantity}× {p?.name || 'Item'}</span>
-                                        <span className="font-semibold text-foreground">Rp {(item.quantity * (p?.price || 0)).toLocaleString('id-ID')}</span>
+                                        <span className="font-semibold text-foreground">Rp {formatPrice(item.quantity * (p?.price || 0))}</span>
                                     </div>
                                 );
                             })}
@@ -679,21 +686,21 @@ export default function Terminal({ products: initialProducts, categories: initia
                         <div className="border-t border-dashed border-border mt-4 pt-4 space-y-1.5 text-sm">
                             <div className="flex justify-between text-muted-foreground">
                                 <span>Subtotal</span>
-                                <span>Rp {parseFloat(completedOrder?.subtotal || 0).toLocaleString('id-ID')}</span>
+                                <span>Rp {formatPrice(parseFloat(completedOrder?.subtotal || 0))}</span>
                             </div>
                             {parseFloat(completedOrder?.discount_amount || 0) > 0 && (
                                 <div className="flex justify-between text-destructive">
                                     <span>Diskon</span>
-                                    <span>− Rp {parseFloat(completedOrder?.discount_amount).toLocaleString('id-ID')}</span>
+                                    <span>− Rp {formatPrice(parseFloat(completedOrder?.discount_amount))}</span>
                                 </div>
                             )}
                             <div className="flex justify-between text-muted-foreground">
                                 <span>Pajak (10%)</span>
-                                <span>Rp {parseFloat(completedOrder?.tax_amount || 0).toLocaleString('id-ID')}</span>
+                                <span>Rp {formatPrice(parseFloat(completedOrder?.tax_amount || 0))}</span>
                             </div>
                             <div className="flex justify-between text-base font-black pt-2 border-t border-border">
                                 <span className="text-foreground">Total</span>
-                                <span className="text-primary">Rp {parseFloat(completedOrder?.total_price || 0).toLocaleString('id-ID')}</span>
+                                <span className="text-primary">Rp {formatPrice(parseFloat(completedOrder?.total_price || 0))}</span>
                             </div>
                         </div>
                         <p className="text-center text-xs text-muted-foreground italic mt-4">— Terima kasih atas kunjungan Anda —</p>

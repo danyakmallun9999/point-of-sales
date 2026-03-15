@@ -16,6 +16,19 @@ class Product extends Model
     ];
 
     /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'price' => 'float',
+            'stock' => 'integer',
+        ];
+    }
+
+    /**
      * Get the category that owns the product.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Category, \App\Models\Product>
