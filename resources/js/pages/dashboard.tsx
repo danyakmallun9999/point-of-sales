@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { Banknote, ShoppingBag, Package, AlertTriangle, Clock } from 'lucide-react';
+import { Banknote, ShoppingBag, Package, AlertTriangle, Clock, Zap, ArrowUpRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -106,15 +106,21 @@ export default function Dashboard({ stats, recentOrders }: Props) {
                         </CardContent>
                     </Card>
 
-                    <Card className="lg:col-span-3 border border-primary/20 shadow-sm bg-primary text-primary-foreground">
+                    <Card className="lg:col-span-3 border border-primary/20 shadow-md shadow-primary/5 bg-linear-to-br from-card to-muted/50 dark:from-card dark:to-muted/20">
                         <CardHeader>
-                            <CardTitle className="text-primary-foreground">Quick Actions</CardTitle>
+                            <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+                                <Zap className="w-5 h-5 text-primary" />
+                                Quick Actions
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-3">
-                            <Button asChild className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/90 border-0 font-bold">
-                                <a href="/pos">Open POS Terminal</a>
+                        <CardContent className="space-y-4">
+                            <Button asChild size="lg" className="w-full font-bold group">
+                                <a href="/pos">
+                                    Open POS Terminal
+                                    <ArrowUpRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                                </a>
                             </Button>
-                            <Button asChild variant="outline" className="w-full border-primary-foreground/30 hover:bg-primary-foreground/10 text-primary-foreground font-bold">
+                            <Button asChild variant="outline" size="lg" className="w-full font-bold">
                                 <a href="/management/products">Manage Inventory</a>
                             </Button>
                         </CardContent>
