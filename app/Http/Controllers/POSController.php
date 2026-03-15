@@ -39,7 +39,9 @@ class POSController extends Controller
                 $product = Product::findOrFail($item['product_id']);
 
                 if ($product->stock < $item['quantity']) {
-                    throw new \Exception("Insufficient stock for product: {$product->name}");
+                    return back()->withErrors([
+                        'items' => "Insufficient stock for product: {$product->name}"
+                    ]);
                 }
 
                 $itemPrice = (float) $product->price;

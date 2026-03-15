@@ -16,6 +16,7 @@ interface Product {
     name: string;
     description: string;
     price: number;
+    stock: number;
     image?: string;
     category_id: number;
 }
@@ -95,10 +96,17 @@ export default function Terminal({ products: initialProducts, categories: initia
     };
 
     const addToCart = (product: Product) => {
+        const existing = cart.find((item) => item.id === product.id);
+        const currentQty = existing ? existing.quantity : 0;
+
+        if (currentQty >= product.stock) {
+            alert(`Stok tidak mencukupi untuk ${product.name}`);
+            return;
+        }
+
         setJustAddedId(product.id);
         window.setTimeout(() => setJustAddedId(null), 500);
         setCart((prev) => {
-            const existing = prev.find((item) => item.id === product.id);
             if (existing) {
                 return prev.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
             }
@@ -114,7 +122,14 @@ export default function Terminal({ products: initialProducts, categories: initia
         setCart((prev) =>
             prev.map((item) => {
                 if (item.id === productId) {
+                    const product = products.find(p => p.id === productId);
                     const newQty = Math.max(1, item.quantity + delta);
+
+                    if (product && newQty > product.stock) {
+                        alert(`Stok tidak mencukupi untuk ${product.name}`);
+                        return item;
+                    }
+
                     return { ...item, quantity: newQty };
                 }
                 return item;
@@ -507,47 +522,71 @@ export default function Terminal({ products: initialProducts, categories: initia
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
-                                {filteredProducts.map((product, i) => (
-                                    <div
-                                        key={product.id}
-                                        onClick={() => addToCart(product)}
-                                        style={{ animationDelay: `${Math.min(i * 25, 300)}ms` }}
-                                        className="animate-fadeInUp cursor-pointer bg-card rounded-xl sm:rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-[shadow,border-color] duration-200 active:shadow-md active:border-primary/30"
-                                    >
-                                        <div className="aspect-square relative bg-muted/30 overflow-hidden">
-                                            {product.image ? (
-                                                <img src={product.image} alt={product.name} width={400} height={400} className="object-cover w-full h-full" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-muted/50 to-primary/5">
-                                                    <Coffee className="w-10 h-10 text-primary/20" />
+                                {filteredProducts.map((product, i) => {
+                                    const isOutOfStock = product.stock <= 0;
+                                    const cartItem = cart.find(c => c.id === product.id);
+
+                                    return (
+                                        <div
+                                            key={product.id}
+                                            onClick={() => !isOutOfStock && addToCart(product)}
+                                            style={{ animationDelay: `${Math.min(i * 25, 300)}ms` }}
+                                            className={`animate-fadeInUp cursor-pointer bg-card rounded-xl sm:rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-[shadow,border-color] duration-200 active:shadow-md active:border-primary/30 ${isOutOfStock ? 'opacity-60 grayscale cursor-not-allowed' : ''}`}
+                                        >
+                                            <div className="aspect-square relative bg-muted/30 overflow-hidden">
+                                                {product.image ? (
+                                                    <img src={product.image} alt={product.name} width={400} height={400} className="object-cover w-full h-full" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-muted/50 to-primary/5">
+                                                        <Coffee className="w-10 h-10 text-primary/20" />
+                                                    </div>
+                                                )}
+                                                {!isOutOfStock && (
+                                                    <div className="absolute inset-0 bg-primary/15 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                                        <div className={`w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg transition-transform ${justAddedId === product.id ? 'animate-cart-pop' : ''}`}>
+                                                            <Plus className="w-6 h-6" />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {isOutOfStock && (
+                                                    <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] flex items-center justify-center">
+                                                        <div className="bg-destructive text-destructive-foreground text-[10px] font-black px-2 py-1 rounded-full shadow-lg uppercase tracking-wider">
+                                                            Stok Habis
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                <div className="absolute bottom-2 left-2 bg-card/95 backdrop-blur-md text-card-foreground text-[11px] font-black px-2 py-1 rounded-lg border border-border/50 shadow-sm flex items-center gap-1">
+                                                    <span className="text-primary text-[9px]">Rp</span>
+                                                    {product.price.toLocaleString('id-ID')}
                                                 </div>
-                                            )}
-                                            <div className="absolute inset-0 bg-primary/15 flex items-center justify-center">
-                                                <div className={`w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg transition-transform ${justAddedId === product.id ? 'animate-cart-pop' : ''}`}>
-                                                    <Plus className="w-6 h-6" />
-                                                </div>
-                                            </div>
-                                            <div className="absolute bottom-2 left-2 bg-card/95 backdrop-blur-md text-card-foreground text-[11px] font-black px-2 py-1 rounded-lg border border-border/50 shadow-sm flex items-center gap-1">
-                                                <span className="text-primary text-[9px]">Rp</span>
-                                                {product.price.toLocaleString('id-ID')}
-                                            </div>
-                                            {(() => {
-                                                const cartItem = cart.find(c => c.id === product.id);
-                                                if (!cartItem) return null;
-                                                return (
+
+                                                {cartItem && (
                                                     <div className={`absolute top-2 right-2 bg-primary text-primary-foreground flex items-center gap-1.5 px-2.5 py-1 rounded-full shadow-lg border border-primary-foreground/20 ${justAddedId === product.id ? 'animate-cart-pop' : ''}`}>
                                                         <ShoppingBag className="w-3 h-3" />
                                                         <span className="text-[11px] font-black leading-none">{cartItem.quantity}</span>
                                                     </div>
-                                                );
-                                            })()}
+                                                )}
+
+                                                {product.stock > 0 && product.stock <= 5 && (
+                                                    <div className="absolute top-2 left-2 bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm uppercase">
+                                                        Sisa {product.stock}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="p-3 min-h-16 flex flex-col justify-center">
+                                                <h3 className="font-bold text-sm text-foreground leading-snug line-clamp-2">{product.name}</h3>
+                                                <div className="flex items-center justify-between mt-1">
+                                                    <p className="text-xs text-muted-foreground line-clamp-1">{product.description}</p>
+                                                    <span className={`text-[10px] font-bold ${product.stock <= 5 ? 'text-amber-500' : 'text-muted-foreground/50'}`}>
+                                                        Stok: {product.stock}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="p-3 min-h-16 flex flex-col justify-center">
-                                            <h3 className="font-bold text-sm text-foreground leading-snug line-clamp-2">{product.name}</h3>
-                                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{product.description}</p>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
