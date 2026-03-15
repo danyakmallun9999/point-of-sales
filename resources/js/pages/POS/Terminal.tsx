@@ -413,14 +413,8 @@ export default function Terminal({ products: initialProducts, categories: initia
                     50% { transform: scale(1.15); }
                     100% { transform: scale(1); }
                 }
-                @keyframes cardAdded {
-                    0% { box-shadow: 0 0 0 0 var(--color-primary); }
-                    50% { box-shadow: 0 0 0 4px var(--color-primary); }
-                    100% { box-shadow: 0 0 0 0 var(--color-primary); }
-                }
                 .animate-fadeInUp { animation: fadeInUp 0.35s ease-out forwards; }
                 .animate-cart-pop { animation: cartPop 0.35s ease-out; }
-                .animate-card-added { animation: cardAdded 0.5s ease-out; }
 
                 /* Paksa wrapper AppShell mengisi sisa tinggi viewport dengan flex */
                 html, body { height: 100dvh; overflow: hidden; }
@@ -518,7 +512,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                                         key={product.id}
                                         onClick={() => addToCart(product)}
                                         style={{ animationDelay: `${Math.min(i * 25, 300)}ms` }}
-                                        className={`animate-fadeInUp cursor-pointer bg-card rounded-xl sm:rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-[shadow,border-color] duration-200 active:shadow-md active:border-primary/30 ${justAddedId === product.id ? 'animate-card-added' : ''}`}
+                                        className="animate-fadeInUp cursor-pointer bg-card rounded-xl sm:rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-[shadow,border-color] duration-200 active:shadow-md active:border-primary/30"
                                     >
                                         <div className="aspect-square relative bg-muted/30 overflow-hidden">
                                             {product.image ? (
@@ -529,7 +523,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                                                 </div>
                                             )}
                                             <div className="absolute inset-0 bg-primary/15 flex items-center justify-center">
-                                                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
+                                                <div className={`w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg transition-transform ${justAddedId === product.id ? 'animate-cart-pop' : ''}`}>
                                                     <Plus className="w-6 h-6" />
                                                 </div>
                                             </div>
