@@ -14,7 +14,9 @@ export default defineConfig({
         }),
         react(),
         tailwindcss(),
-        wayfinder(),
+        wayfinder({
+            formVariants: true,
+        }),
         VitePWA({
             registerType: 'autoUpdate',
             injectRegister: 'auto',
