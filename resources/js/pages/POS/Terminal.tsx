@@ -94,7 +94,6 @@ export default function Terminal({ products: initialProducts, categories: initia
         setIsSyncing(false);
     };
 
-
     const addToCart = (product: Product) => {
         setJustAddedId(product.id);
         window.setTimeout(() => setJustAddedId(null), 500);
@@ -177,7 +176,6 @@ export default function Terminal({ products: initialProducts, categories: initia
         });
     };
 
-    // Polling for QRIS status
     useEffect(() => {
         let interval: NodeJS.Timeout;
 
@@ -193,13 +191,11 @@ export default function Terminal({ products: initialProducts, categories: initia
                     const data = await response.json();
 
                     if (data.payment_status === 'paid') {
-                        // Payment success: use order from checkStatus response for receipt
                         setCompletedOrder(data.order ?? null);
                         setShowSuccess(true);
                         setQrisData(null);
                         setCart([]);
                         setDiscount(0);
-                        // Refresh products so stock and catalog are up to date
                         router.reload({ only: ['products'] });
                     }
                 } catch (e) {
@@ -225,9 +221,9 @@ export default function Terminal({ products: initialProducts, categories: initia
 
             if (response.ok && (data.actions || data.order_id)) {
                 const qrAction = Array.isArray(data.actions) ? data.actions.find((a: any) => a.name === 'generate-qr-code') : null;
-                setQrisData({ 
-                    qr_url: qrAction?.url, 
-                    status: 'pending', 
+                setQrisData({
+                    qr_url: qrAction?.url,
+                    status: 'pending',
                     orderId,
                     midtransOrderId: data.order_id,
                     orderTotal: data.order_total ?? data.gross_amount,
@@ -242,23 +238,41 @@ export default function Terminal({ products: initialProducts, categories: initia
         }
     };
 
-    // ─── Reusable Cart Panel (used in sidebar + mobile sheet) ───────────────────
+    // ─── Cart Panel ──────────────────────────────────────────────────────────────
+    //
+    // Struktur 3 zona yang WAJIB untuk scroll independen:
+    //
+    //  ┌─────────────────────────┐  ← shrink-0   (header, tinggi tetap)
+    //  │  Header "Order"         │
+    //  ├─────────────────────────┤
+    //  │  Daftar item            │  ← flex-1 min-h-0 overflow-y-auto  (SCROLL DI SINI)
+    //  │  (scrollable)           │
+    //  │                         │
+    //  ├─────────────────────────┤
+    //  │  Diskon + Total         │  ← shrink-0   (footer, SELALU TAMPIL)
+    //  │  [Tunai]  [QRIS]        │
+    //  └─────────────────────────┘
+    //
+    // Container induk HARUS: flex flex-col h-full overflow-hidden
+    // min-h-0 pada zona tengah adalah KUNCI — tanpanya flex tidak bisa membatasi tinggi
+
     const CartPanel = () => (
-        <div className="flex flex-col h-full bg-sidebar">
-            {/* Cart Header */}
-            <div className="px-5 py-4 border-b border-sidebar-border">
+        <div className="flex flex-col h-full overflow-hidden bg-sidebar">
+
+            {/* ZONA 1 — Header (tinggi tetap, tidak scroll) */}
+            <div className="shrink-0 px-5 py-4 border-b border-sidebar-border">
                 <div className="flex items-center justify-between">
-                    <h2 className="font-sans text-lg font-bold text-sidebar-foreground tracking-wide">Order</h2>
+                    <h2 className="text-lg font-bold text-sidebar-foreground tracking-wide">Order</h2>
                     {cart.length > 0 && (
-                        <span className="text-xs bg-primary text-primary-foreground font-bold px-2 py-0.5 rounded-full">
+                        <span className="text-xs bg-primary text-primary-foreground font-bold px-2.5 py-0.5 rounded-full">
                             {totalItems} item{totalItems > 1 ? 's' : ''}
                         </span>
                     )}
                 </div>
             </div>
 
-            {/* Cart Items */}
-            <div className="flex-1 overflow-auto px-5 py-4">
+            {/* ZONA 2 — Item list (flex-1 min-h-0 = scroll area tersendiri) */}
+            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-5 py-4">
                 {cart.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground py-12">
                         <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center">
@@ -270,10 +284,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                 ) : (
                     <div className="space-y-3">
                         {cart.map((item) => (
-                            <div
-                                key={item.id}
-                                className="rounded-xl bg-sidebar-accent/50 p-3 transition-colors"
-                            >
+                            <div key={item.id} className="rounded-xl bg-sidebar-accent/50 p-3 transition-colors">
                                 <div className="flex gap-3">
                                     <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden shrink-0 flex items-center justify-center">
                                         {item.image ? (
@@ -284,9 +295,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-semibold text-sidebar-foreground line-clamp-2 leading-snug">{item.name}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            Rp {item.price.toLocaleString('id-ID')}
-                                        </p>
+                                        <p className="text-xs text-muted-foreground mt-1">Rp {item.price.toLocaleString('id-ID')}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-sidebar-border/50">
@@ -321,9 +330,9 @@ export default function Terminal({ products: initialProducts, categories: initia
                 )}
             </div>
 
-            {/* Summary & Checkout */}
-            <div className="px-5 py-5 border-t border-sidebar-border space-y-4">
-                {/* Discount Field */}
+            {/* ZONA 3 — Summary + Tombol bayar (shrink-0 = SELALU TAMPIL, tidak pernah terdorong scroll) */}
+            <div className="shrink-0 px-5 py-5 border-t border-sidebar-border space-y-4 bg-sidebar">
+                {/* Diskon */}
                 <div className="flex items-center gap-3 bg-muted/30 rounded-xl px-3 py-2">
                     <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Diskon</Label>
                     <div className="flex-1 flex items-center gap-1">
@@ -337,7 +346,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                     </div>
                 </div>
 
-                {/* Totals */}
+                {/* Ringkasan harga */}
                 <div className="space-y-2">
                     <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Subtotal</span>
@@ -355,13 +364,11 @@ export default function Terminal({ products: initialProducts, categories: initia
                     </div>
                     <div className="flex justify-between items-baseline pt-2 border-t border-sidebar-border">
                         <span className="text-sm font-bold text-sidebar-foreground">Total</span>
-                        <span className="text-xl font-black text-primary">
-                            Rp {total.toLocaleString('id-ID')}
-                        </span>
+                        <span className="text-xl font-black text-primary">Rp {total.toLocaleString('id-ID')}</span>
                     </div>
                 </div>
 
-                {/* Payment Buttons — ukuran besar untuk layar sentuh */}
+                {/* Tombol pembayaran */}
                 <div className="grid grid-cols-2 gap-3">
                     <button
                         disabled={cart.length === 0 || isProcessing}
@@ -414,15 +421,22 @@ export default function Terminal({ products: initialProducts, categories: initia
                 .animate-fadeInUp { animation: fadeInUp 0.35s ease-out forwards; }
                 .animate-cart-pop { animation: cartPop 0.35s ease-out; }
                 .animate-card-added { animation: cardAdded 0.5s ease-out; }
+
+                /* Paksa wrapper AppShell mengisi sisa tinggi viewport dengan flex */
+                html, body { height: 100dvh; overflow: hidden; }
+                #app { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+                /* pos-layout: container langsung di dalam AppShell content area */
+                .pos-layout { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
             `}</style>
 
-            <div className="flex flex-col lg:flex-row flex-1 min-h-dvh sm:min-h-0 h-full bg-background overflow-hidden font-sans">
+            <div className="pos-layout">
+            <div className="flex flex-col lg:flex-row flex-1 min-h-0 bg-background overflow-hidden font-sans">
 
-                {/* ── LEFT: Product Catalog (mobile-first) ───────────────────── */}
+                {/* ── KIRI: Katalog Produk ─────────────────────────────────── */}
                 <div className="flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden">
 
-                    {/* Top Bar — compact on mobile */}
-                    <div className="bg-card border-b border-border px-3 py-2.5 sm:px-4 md:px-6 md:py-3 flex items-center gap-2 sm:gap-3 shrink-0">
+                    {/* Top Bar — shrink-0 agar tidak ikut scroll */}
+                    <div className="shrink-0 bg-card border-b border-border px-3 py-2.5 sm:px-4 md:px-6 md:py-3 flex items-center gap-2 sm:gap-3">
                         {/* Brand */}
                         <div className="flex items-center gap-2 shrink-0">
                             <div className="w-8 h-8 sm:w-9 sm:h-9 bg-primary rounded-lg flex items-center justify-center">
@@ -434,7 +448,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                             </div>
                         </div>
 
-                        {/* Status badges */}
+                        {/* Status */}
                         <div className="hidden sm:flex items-center gap-2">
                             {isOnline ? (
                                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full">
@@ -465,10 +479,13 @@ export default function Terminal({ products: initialProducts, categories: initia
                             />
                         </div>
 
-                        {/* Mobile cart trigger */}
+                        {/* Tombol keranjang mobile */}
                         <Sheet open={cartOpen} onOpenChange={setCartOpen}>
                             <SheetTrigger asChild>
-                                <button aria-label="Buka keranjang" className="lg:hidden relative w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0 transition-colors hover:bg-primary/90">
+                                <button
+                                    aria-label="Buka keranjang"
+                                    className="lg:hidden relative w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0 transition-colors hover:bg-primary/90"
+                                >
                                     <ShoppingBag className="w-5 h-5 text-primary-foreground" />
                                     {totalItems > 0 && (
                                         <span key={totalItems} className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full bg-accent text-accent-foreground text-[10px] font-black flex items-center justify-center px-1 animate-cart-pop">
@@ -477,14 +494,18 @@ export default function Terminal({ products: initialProducts, categories: initia
                                     )}
                                 </button>
                             </SheetTrigger>
-                            <SheetContent side="right" className="p-0 w-full max-w-[100vw] sm:w-[400px] bg-sidebar border-l border-sidebar-border">
+                            {/*
+                                SheetContent: h-full agar CartPanel bisa flex penuh.
+                                flex flex-col agar CartPanel mengisi tinggi dengan benar.
+                            */}
+                            <SheetContent side="right" className="p-0 w-full max-w-[100vw] sm:w-[400px] bg-sidebar border-l border-sidebar-border flex flex-col h-full">
                                 <CartPanel />
                             </SheetContent>
                         </Sheet>
                     </div>
 
-                    {/* Product Grid — mobile-first: 2 cols, then 3–5 on larger */}
-                    <div className="flex-1 min-h-0 overflow-auto scrollbar-hide p-3 sm:p-4 md:p-6 pb-4">
+                    {/* Grid produk — flex-1 min-h-0 = scroll tersendiri */}
+                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide p-3 sm:p-4 md:p-6">
                         {filteredProducts.length === 0 ? (
                             <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-muted-foreground/50">
                                 <Coffee className="w-12 h-12 opacity-20" />
@@ -497,43 +518,30 @@ export default function Terminal({ products: initialProducts, categories: initia
                                         key={product.id}
                                         onClick={() => addToCart(product)}
                                         style={{ animationDelay: `${Math.min(i * 25, 300)}ms` }}
-                                        className={`product-card animate-fadeInUp cursor-pointer bg-card rounded-xl sm:rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-[shadow,border-color] duration-200 active:shadow-md active:border-primary/30 ${justAddedId === product.id ? 'animate-card-added' : ''}`}
+                                        className={`animate-fadeInUp cursor-pointer bg-card rounded-xl sm:rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-[shadow,border-color] duration-200 active:shadow-md active:border-primary/30 ${justAddedId === product.id ? 'animate-card-added' : ''}`}
                                     >
-                                        {/* Image */}
                                         <div className="aspect-square relative bg-muted/30 overflow-hidden">
                                             {product.image ? (
-                                                <img
-                                                    src={product.image}
-                                                    alt={product.name}
-                                                    width={400}
-                                                    height={400}
-                                                    className="object-cover w-full h-full"
-                                                />
+                                                <img src={product.image} alt={product.name} width={400} height={400} className="object-cover w-full h-full" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-muted/50 to-primary/5">
                                                     <Coffee className="w-10 h-10 text-primary/20" />
                                                 </div>
                                             )}
-                                            {/* Add overlay — selalu tampak untuk layar sentuh (tanpa hover) */}
                                             <div className="absolute inset-0 bg-primary/15 flex items-center justify-center">
                                                 <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
                                                     <Plus className="w-6 h-6" />
                                                 </div>
                                             </div>
-                                            {/* Price badge */}
                                             <div className="absolute bottom-2 left-2 bg-foreground/80 backdrop-blur-sm text-background text-xs font-black px-2 py-1 rounded-lg">
                                                 Rp {product.price.toLocaleString('id-ID')}
                                             </div>
-                                            {/* Cart indicator — subtle bounce when this card was just added */}
                                             {cart.find(c => c.id === product.id) && (
                                                 <div className={`absolute top-2 right-2 min-w-[20px] h-5 bg-accent text-accent-foreground rounded-full flex items-center justify-center px-1.5 shadow-sm ${justAddedId === product.id ? 'animate-cart-pop' : ''}`}>
-                                                    <span className="text-[10px] font-black">
-                                                        {cart.find(c => c.id === product.id)?.quantity}
-                                                    </span>
+                                                    <span className="text-[10px] font-black">{cart.find(c => c.id === product.id)?.quantity}</span>
                                                 </div>
                                             )}
                                         </div>
-                                        {/* Info — ruang cukup untuk nama 2 baris */}
                                         <div className="p-3 min-h-16 flex flex-col justify-center">
                                             <h3 className="font-bold text-sm text-foreground leading-snug line-clamp-2">{product.name}</h3>
                                             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{product.description}</p>
@@ -545,11 +553,16 @@ export default function Terminal({ products: initialProducts, categories: initia
                     </div>
                 </div>
 
-                {/* ── RIGHT: Cart Sidebar (desktop) — lebar cukup untuk nama produk ── */}
-                <div className="hidden lg:flex w-[360px] xl:w-[420px] shrink-0 flex-col border-l border-border">
+                {/* ── KANAN: Cart Sidebar (desktop) ────────────────────────── */}
+                {/*
+                    min-h-0 WAJIB di sini — tanpanya kolom bisa melampaui tinggi viewport
+                    dan CartPanel tidak bisa membatasi zona scrollnya.
+                */}
+                <div className="hidden lg:flex w-[360px] xl:w-[420px] shrink-0 flex-col min-h-0 border-l border-border">
                     <CartPanel />
                 </div>
             </div>
+            </div>{/* end pos-layout */}
 
             {/* ── QRIS Modal ──────────────────────────────────────────────── */}
             <Dialog open={!!qrisData} onOpenChange={() => { setQrisData(null); setCart([]); setDiscount(0); }}>
@@ -589,29 +602,24 @@ export default function Terminal({ products: initialProducts, categories: initia
                 </DialogContent>
             </Dialog>
 
-            {/* ── Success & Receipt Modal ──────────────────────────────────── */}
+            {/* ── Struk & Success Modal ────────────────────────────────────── */}
             <Dialog open={showSuccess} onOpenChange={(open) => { if (!open) { setShowSuccess(false); setCompletedOrder(null); } }}>
                 <DialogContent className="sm:max-w-sm bg-card p-0 overflow-hidden border-0 shadow-2xl rounded-2xl">
-                    {/* Header */}
                     <div className="bg-primary px-6 pt-8 pb-10 text-center relative">
                         <div className="w-14 h-14 bg-accent text-accent-foreground rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
                             <CheckCircle2 className="w-8 h-8" />
                         </div>
                         <h2 className="text-2xl font-black text-primary-foreground">Pembayaran Berhasil!</h2>
                         <p className="text-primary-foreground/70 text-sm mt-1 font-mono">{completedOrder?.reference_number}</p>
-                        {/* Scallop bottom */}
-                        <div className="absolute bottom-0 left-0 right-0 h-5 bg-card"
-                             style={{ clipPath: 'ellipse(55% 100% at 50% 100%)' }} />
+                        <div className="absolute bottom-0 left-0 right-0 h-5 bg-card" style={{ clipPath: 'ellipse(55% 100% at 50% 100%)' }} />
                     </div>
 
-                    {/* Receipt */}
-                    <div className="px-6 py-4 max-h-[55vh] overflow-auto">
+                    <div className="px-6 py-4 max-h-[55vh] overflow-y-auto">
                         <div className="text-center mb-4">
                             <p className="font-bold text-base text-foreground">Brew & Bytes Coffee</p>
                             <p className="text-xs text-muted-foreground">Jl. Teknologi No. 123, Indonesia</p>
                             <p className="text-xs text-muted-foreground">{new Date().toLocaleString('id-ID')}</p>
                         </div>
-
                         <div className="border-t border-dashed border-border pt-4 space-y-2">
                             {completedOrder?.items?.map((item: any, i: number) => (
                                 <div key={i} className="flex justify-between text-sm">
@@ -629,7 +637,6 @@ export default function Terminal({ products: initialProducts, categories: initia
                                 );
                             })}
                         </div>
-
                         <div className="border-t border-dashed border-border mt-4 pt-4 space-y-1.5 text-sm">
                             <div className="flex justify-between text-muted-foreground">
                                 <span>Subtotal</span>
@@ -650,12 +657,10 @@ export default function Terminal({ products: initialProducts, categories: initia
                                 <span className="text-primary">Rp {parseFloat(completedOrder?.total_price || 0).toLocaleString('id-ID')}</span>
                             </div>
                         </div>
-
                         <p className="text-center text-xs text-muted-foreground italic mt-4">— Terima kasih atas kunjungan Anda —</p>
                     </div>
 
-                    {/* Actions */}
-                    <div className="p-4 bg-muted/20 flex gap-2 border-t border-border">
+                    <div className="shrink-0 p-4 bg-muted/20 flex gap-2 border-t border-border">
                         <button
                             onClick={() => setShowSuccess(false)}
                             aria-label="Tutup struk"
