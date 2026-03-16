@@ -7,7 +7,7 @@ export default function Welcome() {
 
     return (
         <>
-            <Head title="Point of Sales Terminal" />
+            <Head title="POS Terminal" />
             
             <div className="flex min-h-screen flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
                 <main className="flex flex-1 flex-col items-center justify-center px-6">
@@ -20,10 +20,10 @@ export default function Welcome() {
                             
                             <div className="space-y-1.5">
                                 <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                                    KasirKu Terminal
+                                    Brew & Bytes
                                 </h1>
                                 <p className="text-sm text-muted-foreground">
-                                    Enterprise Point of Sales System
+                                    Premium Coffee Shop POS System
                                 </p>
                             </div>
                         </div>
