@@ -44,7 +44,7 @@ export default function AuthSplitLayout({ children, title, description }: AuthLa
 
 function POSAnimation() {
     return (
-        <div className="relative w-full max-w-[500px] aspect-[4/3] flex items-center justify-center">
+        <div className="relative w-full max-w-[500px] aspect-4/3 flex items-center justify-center">
             <style>
                 {`
                 :root {
