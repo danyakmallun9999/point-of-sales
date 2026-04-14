@@ -1,6 +1,8 @@
 import { Head } from '@inertiajs/react';
-import { BrainCircuit, Info, TrendingUp } from 'lucide-react';
+import { BrainCircuit, Info, TrendingUp, BarChart as ChartIcon } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -24,7 +26,24 @@ const breadcrumbs = [
     },
 ];
 
+const chartConfig = {
+    confidence: {
+        label: "Confidence (%)",
+        color: "var(--color-primary)",
+    },
+    support: {
+        label: "Support (%)",
+        color: "var(--color-chart-2)",
+    },
+} satisfies ChartConfig;
+
 export default function AnalyticsIndex({ aprioriInsights = [] }: Props) {
+    const chartData = aprioriInsights.map((insight) => ({
+        name: `${insight.antecedent} → ${insight.consequent}`,
+        confidence: Number((insight.confidence * 100).toFixed(1)),
+        support: Number((insight.support * 100).toFixed(1)),
+    }));
+
     return (
         <AppSidebarLayout breadcrumbs={breadcrumbs}>
             <Head title="AI Analytics" />
@@ -53,6 +72,50 @@ export default function AnalyticsIndex({ aprioriInsights = [] }: Props) {
                         </p>
                     </AlertDescription>
                 </Alert>
+
+                {aprioriInsights.length > 0 && (
+                    <Card className="border border-border/50 shadow-sm">
+                        <CardHeader>
+                            <CardTitle className="text-xl flex items-center gap-2">
+                                <ChartIcon className="h-5 w-5 text-primary" />
+                                Probability Visualization
+                            </CardTitle>
+                            <CardDescription>
+                                Visual comparison of predictability (Confidence) vs popularity (Support)
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="h-[350px] w-full pt-4">
+                                <ChartContainer config={chartConfig} className="h-full w-full">
+                                    <BarChart
+                                        accessibilityLayer
+                                        data={chartData}
+                                        margin={{ top: 5, right: 30, left: -20, bottom: 5 }}
+                                    >
+                                        <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-muted opacity-50" />
+                                        <XAxis 
+                                            dataKey="name" 
+                                            tickLine={false}
+                                            tickMargin={10}
+                                            axisLine={false}
+                                            tick={{fontSize: 12, fill: 'hsl(var(--muted-foreground))'}} 
+                                        />
+                                        <YAxis 
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{fill: 'hsl(var(--muted-foreground))'}} 
+                                            tickFormatter={(val) => `${val}%`} 
+                                        />
+                                        <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dashed" />} />
+                                        <Legend wrapperStyle={{paddingTop: '20px'}} />
+                                        <Bar dataKey="confidence" name="Confidence (%)" fill="var(--color-confidence)" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                                        <Bar dataKey="support" name="Support (%)" fill="var(--color-support)" radius={[4, 4, 0, 0]} opacity={0.6} maxBarSize={60} />
+                                    </BarChart>
+                                </ChartContainer>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 <Card className="border border-border/50 shadow-sm">
                     <CardHeader>
