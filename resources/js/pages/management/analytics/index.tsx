@@ -46,29 +46,29 @@ export default function AnalyticsIndex({ aprioriInsights = [] }: Props) {
 
     return (
         <AppSidebarLayout breadcrumbs={breadcrumbs}>
-            <Head title="AI Analytics" />
+            <Head title="Dasbor Analitik AI" />
             <div className="flex flex-1 flex-col gap-6 p-6 max-w-7xl mx-auto w-full">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
                             <BrainCircuit className="h-8 w-8 text-primary" />
-                            AI Analytics Dashboard
+                            Dasbor Analitik AI
                         </h1>
                         <p className="text-muted-foreground mt-2">
-                            Market Basket Analysis using Apriori algorithm to discover product associations.
+                            Analisis Keranjang Belanja menggunakan algoritma Apriori untuk menemukan asosiasi produk.
                         </p>
                     </div>
                 </div>
 
                 <Alert className="bg-primary/5 border-primary/20">
                     <Info className="h-5 w-5 text-primary" />
-                    <AlertTitle className="text-primary font-bold">How to read this data?</AlertTitle>
+                    <AlertTitle className="text-primary font-bold">Bagaimana cara membaca data ini?</AlertTitle>
                     <AlertDescription className="mt-2 text-muted-foreground text-sm grid gap-2">
                         <p>
-                            <strong>Support:</strong> The proportion of transactions that contain both products. A higher support means the combination is very popular.
+                            <strong>Support (Dukungan):</strong> Proporsi seberapa sering kedua produk tersebut muncul bersamaan di seluruh transaksi toko. Semakin tinggi berarti kombinasi ini sangat populer.
                         </p>
                         <p>
-                            <strong>Confidence:</strong> The probability that a customer will buy the "Consequent" product, given that they already bought the "Antecedent" product.
+                            <strong>Confidence (Kepastian):</strong> Probabilitas/Peluang seorang pelanggan akan ikut memesan produk "Pasangan", setelah mereka dipastikan memesan produk "Utama".
                         </p>
                     </AlertDescription>
                 </Alert>
@@ -78,10 +78,10 @@ export default function AnalyticsIndex({ aprioriInsights = [] }: Props) {
                         <CardHeader>
                             <CardTitle className="text-xl flex items-center gap-2">
                                 <ChartIcon className="h-5 w-5 text-primary" />
-                                Probability Visualization
+                                Visualisasi Probabilitas
                             </CardTitle>
                             <CardDescription>
-                                Visual comparison of predictability (Confidence) vs popularity (Support)
+                                Perbandingan visual antara tingkat kepastian (Confidence) dan kepopuleran (Support)
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -121,10 +121,10 @@ export default function AnalyticsIndex({ aprioriInsights = [] }: Props) {
                     <CardHeader>
                         <CardTitle className="text-xl flex items-center gap-2">
                             <TrendingUp className="h-5 w-5 text-primary" />
-                            Product Recommendations (Cross-Selling)
+                            Pola Kombinasi Produk (Cross-Selling)
                         </CardTitle>
                         <CardDescription>
-                            Discovered patterns based on historical transaction data (Minimum Support 5%, Confidence 30%).
+                            Pola yang ditemukan berdasarkan histori transaksi (Minimal Dukungan 5%, Kepastian 30%).
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -134,9 +134,9 @@ export default function AnalyticsIndex({ aprioriInsights = [] }: Props) {
                                     <TableHeader className="bg-muted/50">
                                         <TableRow>
                                             <TableHead className="w-[50px]">#</TableHead>
-                                            <TableHead>Primary Product (Antecedent)</TableHead>
+                                            <TableHead>Produk Utama (Antecedent)</TableHead>
                                             <TableHead className="w-[50px] text-center"></TableHead>
-                                            <TableHead>Recommended Product (Consequent)</TableHead>
+                                            <TableHead>Produk Pasangan (Consequent)</TableHead>
                                             <TableHead className="text-right">Support</TableHead>
                                             <TableHead className="text-right">Confidence</TableHead>
                                         </TableRow>
@@ -166,12 +166,42 @@ export default function AnalyticsIndex({ aprioriInsights = [] }: Props) {
                         ) : (
                             <div className="text-center py-12 text-muted-foreground">
                                 <BrainCircuit className="mx-auto h-12 w-12 opacity-20 mb-4" />
-                                <p className="text-lg font-medium">No significant patterns discovered yet.</p>
-                                <p className="text-sm">The algorithm needs more transaction data with multiple items per order to generate reliable recommendations.</p>
+                                <p className="text-lg font-medium">Belum ada pola signifikan yang ditemukan.</p>
+                                <p className="text-sm">Sistem membutuhkan lebih banyak data transaksi (minimal berisi 2 barang per pesanan) agar dapat meracik rekomendasi.</p>
                             </div>
                         )}
                     </CardContent>
                 </Card>
+
+                {aprioriInsights.length > 0 && (
+                    <Card className="border border-primary/20 shadow-sm bg-primary/5">
+                        <CardHeader>
+                            <CardTitle className="text-xl flex items-center gap-2">
+                                <BrainCircuit className="h-5 w-5 text-primary" />
+                                Rekomendasi Tindakan Bisnis
+                            </CardTitle>
+                            <CardDescription>
+                                Berdasarkan pola algoritma di atas, berikut adalah langkah strategis yang direkomendasikan untuk Pemilik Bisnis/Manajer:
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ul className="list-disc pl-5 space-y-3 text-sm text-foreground/90">
+                                <li>
+                                    <strong>Penempatan Menu/Tampilan:</strong> Pastikan produk <strong>{aprioriInsights[0].consequent}</strong> diposisikan berdekatan atau mudah terlihat jika pelanggan sedang melirik <strong>{aprioriInsights[0].antecedent}</strong>.
+                                </li>
+                                <li>
+                                    <strong>Teknik Kasir (Ucapan):</strong> Buat standar operasional agar Kasir selalu menawarkan <em>"Apakah mau ditambah {aprioriInsights[0].consequent}-nya sekalian, Kak?"</em> setiap kali pengunjung memesan <strong>{aprioriInsights[0].antecedent}</strong>.
+                                </li>
+                                {aprioriInsights.slice(0, 3).map((insight, index) => (
+                                    <li key={index}>
+                                        Pertimbangkan untuk meluncurkan Paket Promo Bundling <strong>"{insight.antecedent} + {insight.consequent}"</strong>. 
+                                        {insight.confidence >= 0.8 ? " Data kami meyakinkan bahwa pelanggan punya intensi sangat tinggi untuk memesan format kombinasi ini." : " Pola menunjukkan bahwa produk ini lumayan sering dibeli bersilangan."}
+                                    </li>
+                                ))}
+                            </ul>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </AppSidebarLayout>
     );
