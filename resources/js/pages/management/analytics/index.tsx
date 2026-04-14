@@ -98,12 +98,12 @@ export default function AnalyticsIndex({ aprioriInsights = [] }: Props) {
                                             tickLine={false}
                                             tickMargin={10}
                                             axisLine={false}
-                                            tick={{fontSize: 12, fill: 'hsl(var(--muted-foreground))'}} 
+                                            tick={{fontSize: 12, fill: 'var(--color-muted-foreground)'}} 
                                         />
                                         <YAxis 
                                             axisLine={false}
                                             tickLine={false}
-                                            tick={{fill: 'hsl(var(--muted-foreground))'}} 
+                                            tick={{fill: 'var(--color-muted-foreground)'}} 
                                             tickFormatter={(val) => `${val}%`} 
                                         />
                                         <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dashed" />} />
