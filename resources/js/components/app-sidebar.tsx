@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, Monitor, Package, Tags, BarChart3, Users } from 'lucide-react';
+import { LayoutGrid, Monitor, Package, Tags, BarChart3, Users, BrainCircuit } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -16,6 +16,7 @@ import { dashboard } from '@/routes';
 import { index as categoryIndex } from '@/routes/management/categories';
 import { index as productIndex } from '@/routes/management/products';
 import { index as reportIndex } from '@/routes/management/reports';
+import { index as analyticsIndex } from '@/routes/management/analytics';
 import { index as userIndex } from '@/routes/management/users';
 import { terminal } from '@/routes/pos';
 import type { NavItem } from '@/types';
@@ -53,6 +54,11 @@ const managementNavItems: NavItem[] = [
         title: 'User Management',
         href: userIndex(),
         icon: Users,
+    },
+    {
+        title: 'AI Analytics',
+        href: analyticsIndex(),
+        icon: BrainCircuit,
     },
 ];
 

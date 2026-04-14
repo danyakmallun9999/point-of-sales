@@ -23,6 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('products', App\Http\Controllers\ProductController::class);
         Route::resource('categories', App\Http\Controllers\CategoryController::class);
         Route::resource('users', App\Http\Controllers\UserController::class)->middleware('role:admin');
+        Route::get('analytics', [App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
 
         Route::get('reports', [App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
         Route::get('reports/export', [App\Http\Controllers\ReportController::class, 'export'])->name('reports.export');
