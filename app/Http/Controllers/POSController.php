@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
@@ -40,7 +41,7 @@ class POSController extends Controller
 
                 if ($product->stock < $item['quantity']) {
                     return back()->withErrors([
-                        'items' => "Insufficient stock for product: {$product->name}"
+                        'items' => "Insufficient stock for product: {$product->name}",
                     ]);
                 }
 
@@ -79,7 +80,10 @@ class POSController extends Controller
                 $order->items()->create($itemData);
                 // Deduct stock only for cash; for QRIS we deduct when payment succeeds (in Order::markAsPaid)
                 if ($validated['payment_method'] === 'cash') {
-                    Product::where('id', $itemData['product_id'])->decrement('stock', $itemData['quantity']);
+                    $productToUpdate = Product::find($itemData['product_id']);
+                    if ($productToUpdate) {
+                        $productToUpdate->deductStockFIFO($itemData['quantity']);
+                    }
                 }
             }
 

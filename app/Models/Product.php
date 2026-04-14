@@ -47,4 +47,48 @@ class Product extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    /**
+     * Get the inventory batches for the product.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\InventoryBatch>
+     */
+    public function inventoryBatches(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(InventoryBatch::class);
+    }
+
+    /**
+     * Deduct stock using FIFO algorithm.
+     */
+    public function deductStockFIFO(int $quantity): void
+    {
+        $remainingToDeduct = $quantity;
+
+        // Fetch remaining batches ordered by oldest first
+        $batches = $this->inventoryBatches()
+            ->where('remaining_quantity', '>', 0)
+            ->orderBy('created_at', 'asc')
+            ->lockForUpdate() // Avoid race conditions in transaction
+            ->get();
+
+        foreach ($batches as $batch) {
+            if ($remainingToDeduct <= 0) {
+                break;
+            }
+
+            if ($batch->remaining_quantity >= $remainingToDeduct) {
+                $batch->remaining_quantity -= $remainingToDeduct;
+                $batch->save();
+                $remainingToDeduct = 0;
+            } else {
+                $remainingToDeduct -= $batch->remaining_quantity;
+                $batch->remaining_quantity = 0;
+                $batch->save();
+            }
+        }
+
+        // Deduct the general stock aggregate
+        $this->decrement('stock', $quantity);
+    }
 }

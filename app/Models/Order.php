@@ -49,9 +49,11 @@ class Order extends Model
             return true;
         }
 
-        $this->load('items');
+        $this->load('items.product');
         foreach ($this->items as $item) {
-            \App\Models\Product::where('id', $item->product_id)->decrement('stock', $item->quantity);
+            if ($item->product) {
+                $item->product->deductStockFIFO($item->quantity);
+            }
         }
 
         return $this->update(['payment_status' => 'paid']);

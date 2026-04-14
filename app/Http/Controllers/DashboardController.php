@@ -30,9 +30,13 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $aprioriService = new \App\Services\AprioriService;
+        $aprioriInsights = $aprioriService->generateRecommendations(0.1, 0.5);
+
         return Inertia::render('dashboard', [
             'stats' => $stats,
             'recentOrders' => $recentOrders,
+            'aprioriInsights' => $aprioriInsights,
         ]);
     }
 }

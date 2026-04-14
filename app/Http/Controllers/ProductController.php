@@ -34,7 +34,15 @@ class ProductController extends Controller
             $validated['image'] = Storage::disk('public')->url($request->file('image')->store('products', 'public'));
         }
 
-        Product::create($validated);
+        $product = Product::create($validated);
+
+        if ($product->stock > 0) {
+            $product->inventoryBatches()->create([
+                'initial_quantity' => $product->stock,
+                'remaining_quantity' => $product->stock,
+                'buy_price' => 0,
+            ]);
+        }
 
         return back()->with('message', 'Product created successfully.');
     }

@@ -13,6 +13,12 @@ interface Props {
         low_stock_alerts: number;
     };
     recentOrders: any[];
+    aprioriInsights?: {
+        antecedent: string;
+        consequent: string;
+        support: number;
+        confidence: number;
+    }[];
 }
 
 const breadcrumbs = [
@@ -22,7 +28,7 @@ const breadcrumbs = [
     },
 ];
 
-export default function Dashboard({ stats, recentOrders }: Props) {
+export default function Dashboard({ stats, recentOrders, aprioriInsights = [] }: Props) {
     return (
         <AppSidebarLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
@@ -126,6 +132,44 @@ export default function Dashboard({ stats, recentOrders }: Props) {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Algoritma Apriori / Market Basket Analysis Widget */}
+                {aprioriInsights && aprioriInsights.length > 0 && (
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-1">
+                        <Card className="border border-border/50 shadow-sm">
+                            <CardHeader>
+                                <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+                                    <Zap className="w-5 h-5 text-primary" />
+                                    Smart Recommendations (Market Basket Analysis)
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {aprioriInsights.map((insight, idx) => (
+                                        <div key={idx} className="flex flex-col p-4 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors">
+                                            <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1 font-semibold">Customers who bought</div>
+                                            <div className="font-bold text-foreground text-base truncate">{insight.antecedent}</div>
+                                            <div className="flex items-center gap-2 my-2">
+                                                <div className="flex-1 h-px bg-border/50"></div>
+                                                <span className="text-xs text-muted-foreground">often buy</span>
+                                                <div className="flex-1 h-px bg-border/50"></div>
+                                            </div>
+                                            <div className="font-bold text-primary text-lg truncate flex items-center gap-2">
+                                                {insight.consequent}
+                                            </div>
+                                            <div className="mt-3 flex justify-between items-center bg-background/50 p-2 rounded">
+                                                <span className="text-xs text-muted-foreground font-medium">Probability</span>
+                                                <Badge variant="secondary" className="bg-primary hover:bg-primary text-primary-foreground">
+                                                    {(insight.confidence * 100).toFixed(0)}%
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
             </div>
         </AppSidebarLayout>
     );
