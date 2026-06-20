@@ -18,6 +18,7 @@ class StoreUserRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'role' => ['required', 'string', 'in:admin,manager,cashier'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'outlet_id' => ['nullable', 'integer', 'exists:outlets,id'],
         ];
     }
 }

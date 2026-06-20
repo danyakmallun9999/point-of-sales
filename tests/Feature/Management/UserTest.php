@@ -143,3 +143,44 @@ test('manager cannot create a user', function () {
 
     $response->assertForbidden();
 });
+
+test('admin can create a user associated with an outlet', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $outlet = \App\Models\Outlet::create([
+        'name' => 'Test Outlet',
+        'address' => 'Test Address',
+    ]);
+
+    $response = $this->actingAs($admin)->post(route('management.users.store'), [
+        'name' => 'Cashier Outlet',
+        'email' => 'cashieroutlet@example.com',
+        'role' => 'cashier',
+        'outlet_id' => $outlet->id,
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ]);
+
+    $response->assertRedirect();
+    $this->assertDatabaseHas('users', [
+        'name' => 'Cashier Outlet',
+        'email' => 'cashieroutlet@example.com',
+        'role' => 'cashier',
+        'outlet_id' => $outlet->id,
+    ]);
+});
+
+test('admin can update a user outlet association', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $user = User::factory()->create(['role' => 'cashier']);
+    $outlet = \App\Models\Outlet::create([
+        'name' => 'Test Outlet 2',
+        'address' => 'Test Address 2',
+    ]);
+
+    $response = $this->actingAs($admin)->patch(route('management.users.update', $user), [
+        'outlet_id' => $outlet->id,
+    ]);
+
+    $response->assertRedirect();
+    expect($user->fresh()->outlet_id)->toBe($outlet->id);
+});

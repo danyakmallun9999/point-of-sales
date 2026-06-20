@@ -19,6 +19,7 @@ class UpdateUserRequest extends FormRequest
             'email' => ['sometimes', 'string', 'email', 'max:255', Rule::unique('users')->ignore($this->route('user'))],
             'role' => ['sometimes', 'string', 'in:admin,manager,cashier'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'outlet_id' => ['nullable', 'integer', 'exists:outlets,id'],
         ];
     }
 }

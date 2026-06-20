@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Settings\StoreUserRequest;
 use App\Http\Requests\Settings\UpdateUserRequest;
+use App\Models\Outlet;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
@@ -17,7 +18,8 @@ class UserController extends Controller
     public function index(): Response
     {
         return inertia('management/users/index', [
-            'users' => User::latest()->get(),
+            'users' => User::with('outlet')->latest()->get(),
+            'outlets' => Outlet::orderBy('name')->get(),
         ]);
     }
 

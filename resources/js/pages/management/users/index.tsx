@@ -18,10 +18,19 @@ interface UserData {
     name: string;
     email: string;
     role: 'admin' | 'manager' | 'cashier';
+    outlet_id: number | null;
+    outlet?: {
+        id: number;
+        name: string;
+    } | null;
 }
 
 interface Props {
     users: UserData[];
+    outlets: {
+        id: number;
+        name: string;
+    }[];
 }
 
 const breadcrumbs = [
@@ -30,7 +39,7 @@ const breadcrumbs = [
     { title: 'Users', href: '/management/users' },
 ];
 
-export default function UserIndex({ users }: Props) {
+export default function UserIndex({ users, outlets }: Props) {
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -39,6 +48,7 @@ export default function UserIndex({ users }: Props) {
         name: '',
         email: '',
         role: 'cashier',
+        outlet_id: 'none',
         password: '',
         password_confirmation: '',
     });
@@ -47,29 +57,40 @@ export default function UserIndex({ users }: Props) {
         name: '',
         email: '',
         role: 'cashier',
+        outlet_id: 'none',
         password: '',
         password_confirmation: '',
     });
 
     const submitAdd = (e: React.FormEvent) => {
         e.preventDefault();
-        addForm.post(store().url, {
-            onSuccess: () => {
-                setIsAddOpen(false);
-                addForm.reset();
-            },
-        });
+        addForm
+            .transform((data) => ({
+                ...data,
+                outlet_id: data.outlet_id === 'none' || data.outlet_id === '' ? null : data.outlet_id,
+            }))
+            .post(store().url, {
+                onSuccess: () => {
+                    setIsAddOpen(false);
+                    addForm.reset();
+                },
+            });
     };
 
     const submitEdit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingUser) return;
-        editForm.patch(update(editingUser.id).url, {
-            onSuccess: () => {
-                setIsEditOpen(false);
-                setEditingUser(null);
-            },
-        });
+        editForm
+            .transform((data) => ({
+                ...data,
+                outlet_id: data.outlet_id === 'none' || data.outlet_id === '' ? null : data.outlet_id,
+            }))
+            .patch(update(editingUser.id).url, {
+                onSuccess: () => {
+                    setIsEditOpen(false);
+                    setEditingUser(null);
+                },
+            });
     };
 
     const handleDelete = (id: number) => {
@@ -84,6 +105,7 @@ export default function UserIndex({ users }: Props) {
             name: user.name,
             email: user.email,
             role: user.role,
+            outlet_id: user.outlet_id ? user.outlet_id.toString() : '',
             password: '',
             password_confirmation: '',
         });
@@ -136,7 +158,7 @@ export default function UserIndex({ users }: Props) {
                                     <div className="grid gap-2">
                                         <Label htmlFor="role">Role</Label>
                                         <Select value={addForm.data.role} onValueChange={(v: any) => addForm.setData('role', v)}>
-                                            <SelectTrigger>
+                                            <SelectTrigger id="role">
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -145,6 +167,21 @@ export default function UserIndex({ users }: Props) {
                                                 <SelectItem value="cashier">Cashier</SelectItem>
                                             </SelectContent>
                                         </Select>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="outlet_id">Outlet</Label>
+                                        <Select value={addForm.data.outlet_id} onValueChange={v => addForm.setData('outlet_id', v)}>
+                                            <SelectTrigger id="outlet_id">
+                                                <SelectValue placeholder="Tanpa Outlet (None)" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="none">Tanpa Outlet (None)</SelectItem>
+                                                {outlets.map(outlet => (
+                                                    <SelectItem key={outlet.id} value={outlet.id.toString()}>{outlet.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {addForm.errors.outlet_id && <p className="text-xs text-destructive">{addForm.errors.outlet_id}</p>}
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="grid gap-2">
@@ -173,6 +210,7 @@ export default function UserIndex({ users }: Props) {
                                 <TableHead>Name</TableHead>
                                 <TableHead>Email</TableHead>
                                 <TableHead>Role</TableHead>
+                                <TableHead>Outlet</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -182,6 +220,7 @@ export default function UserIndex({ users }: Props) {
                                     <TableCell className="font-medium">{user.name}</TableCell>
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>{getRoleBadge(user.role)}</TableCell>
+                                    <TableCell>{user.outlet?.name || <span className="text-muted-foreground italic text-xs">None</span>}</TableCell>
                                     <TableCell className="text-right space-x-2">
                                         <Button variant="ghost" size="icon" onClick={() => openEdit(user)}>
                                             <Edit className="w-4 h-4" />
@@ -212,7 +251,7 @@ export default function UserIndex({ users }: Props) {
                                 <div className="grid gap-2">
                                     <Label htmlFor="edit-role">Role</Label>
                                     <Select value={editForm.data.role} onValueChange={(v: any) => editForm.setData('role', v)}>
-                                        <SelectTrigger>
+                                        <SelectTrigger id="edit-role">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -221,6 +260,21 @@ export default function UserIndex({ users }: Props) {
                                             <SelectItem value="cashier">Cashier</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="edit-outlet">Outlet</Label>
+                                    <Select value={editForm.data.outlet_id} onValueChange={v => editForm.setData('outlet_id', v)}>
+                                        <SelectTrigger id="edit-outlet">
+                                            <SelectValue placeholder="Tanpa Outlet (None)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">Tanpa Outlet (None)</SelectItem>
+                                            {outlets.map(outlet => (
+                                                <SelectItem key={outlet.id} value={outlet.id.toString()}>{outlet.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {editForm.errors.outlet_id && <p className="text-xs text-destructive">{editForm.errors.outlet_id}</p>}
                                 </div>
                                 <div className="pt-4 border-t">
                                     <Label className="text-xs text-muted-foreground uppercase font-bold">Change Password (Leave blank to keep current)</Label>

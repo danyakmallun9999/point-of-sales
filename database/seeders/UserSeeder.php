@@ -24,7 +24,7 @@ class UserSeeder extends Seeder
 
         // Seed default Admin
         User::updateOrCreate(
-            ['email' => 'posoadmin@poso.com'],
+            ['email' => 'posoadmin@gmail.com'],
             [
                 'name' => 'Admin POSO',
                 'password' => Hash::make('password'),
@@ -35,7 +35,7 @@ class UserSeeder extends Seeder
 
         // Seed default Manager
         User::updateOrCreate(
-            ['email' => 'posomanager@poso.com'],
+            ['email' => 'posomanager@gmail.com'],
             [
                 'name' => 'Manager POSO',
                 'password' => Hash::make('password'),
@@ -46,7 +46,7 @@ class UserSeeder extends Seeder
 
         // Seed default Cashier
         User::updateOrCreate(
-            ['email' => 'posokasir@poso.com'],
+            ['email' => 'posokasir@gmail.com'],
             [
                 'name' => 'Cashier POSO',
                 'password' => Hash::make('password'),
