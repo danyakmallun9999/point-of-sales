@@ -468,7 +468,7 @@ export default function Terminal({ products: initialProducts, categories: initia
                                 <img src="/logoPOS.png" alt="Logo" className="w-full h-full object-contain" />
                             </div>
                             <div className="hidden sm:block">
-                                <h1 className="text-base font-black text-foreground leading-none">Brew & Bytes</h1>
+                                <h1 className="text-base font-black text-foreground leading-none">POSO</h1>
                                 <p className="text-[10px] text-muted-foreground font-medium tracking-widest uppercase">POS Terminal</p>
                             </div>
                         </div>
@@ -671,7 +671,7 @@ export default function Terminal({ products: initialProducts, categories: initia
 
                     <div className="px-6 py-4 max-h-[55vh] overflow-y-auto">
                         <div className="text-center mb-4">
-                            <p className="font-bold text-base text-foreground">Brew & Bytes Coffee</p>
+                            <p className="font-bold text-base text-foreground">POSO</p>
                             <p className="text-xs text-muted-foreground">Jl. Teknologi No. 123, Indonesia</p>
                             <p className="text-xs text-muted-foreground">{new Date().toLocaleString('id-ID')}</p>
                         </div>

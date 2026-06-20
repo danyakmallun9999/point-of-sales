@@ -1,7 +1,7 @@
 import type { IDBPDatabase } from 'idb';
 import { openDB } from 'idb';
 
-const DB_NAME = 'brew_bytes_pos';
+const DB_NAME = 'poso_db';
 const DB_VERSION = 1;
 
 export interface DBProduct {

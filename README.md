@@ -1,4 +1,4 @@
-# ☕ Brew & Bytes POS (Point of Sale)
+# ☕ POSO (Point of Sale)
 
 [![Laravel Version](https://img.shields.io/badge/Laravel-13.x-red.svg?style=flat-square)](https://laravel.com)
 [![React Version](https://img.shields.io/badge/React-19.x-blue.svg?style=flat-square)](https://react.dev)
@@ -6,7 +6,7 @@
 [![Offline First](https://img.shields.io/badge/Offline--First-PWA%20%2B%20IndexedDB-brightgreen.svg?style=flat-square)](#)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
 
-**Brew & Bytes** adalah sistem Point of Sale (POS) berbasis web yang dirancang khusus untuk UMKM kedai kopi (coffee shop). Mengutamakan kecepatan, kemudahan penggunaan, keindahan antarmuka (premium UI/UX), dan keandalan tinggi melalui kemampuan **offline-first**. Aplikasi ini berjalan mulus baik dalam kondisi online maupun offline (tanpa koneksi internet) dan secara otomatis menyinkronkan data ketika koneksi terjalin kembali.
+**POSO** adalah sistem Point of Sale (POS) berbasis web yang dirancang khusus untuk UMKM kedai kopi (coffee shop). Mengutamakan kecepatan, kemudahan penggunaan, keindahan antarmuka (premium UI/UX), dan keandalan tinggi melalui kemampuan **offline-first**. Aplikasi ini berjalan mulus baik dalam kondisi online maupun offline (tanpa koneksi internet) dan secara otomatis menyinkronkan data ketika koneksi terjalin kembali.
 
 ---
 
@@ -241,20 +241,20 @@ Perintah di atas secara bersamaan akan mengaktifkan:
 Setelah melakukan seeding database (`php artisan migrate --seed`), gunakan kredensial berikut untuk masuk ke sistem:
 
 - **Admin (Akses Penuh):**
-  - **Email:** `admin@brew.com`
+  - **Email:** `posoadmin@poso.com`
   - **Password:** `password`
 - **Manager (Stok & Laporan):**
-  - **Email:** `manager@brew.com`
+  - **Email:** `posomanager@poso.com`
   - **Password:** `password`
 - **Cashier (Kasir Terminal):**
-  - **Email:** `cashier@brew.com`
+  - **Email:** `posokasir@poso.com`
   - **Password:** `password`
 
 ---
 
 ## 🔄 Alur Kerja Sistem (System Flows)
 
-Berikut adalah visualisasi alur utama yang diimplementasikan di aplikasi Brew & Bytes:
+Berikut adalah visualisasi alur utama yang diimplementasikan di aplikasi POSO:
 
 ### 1. Transaksi Kasir (Online vs Offline)
 

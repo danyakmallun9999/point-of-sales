@@ -4,7 +4,7 @@ export default function AppLogoIcon({ className, ...props }: ImgHTMLAttributes<H
     return (
         <img 
             src="/logoPOS.png" 
-            alt="Brew & Bytes POS" 
+            alt="POSO" 
             className={`${className || ''} object-contain`}
             {...props} 
         />

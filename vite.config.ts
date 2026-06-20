@@ -21,20 +21,20 @@ export default defineConfig({
             registerType: 'autoUpdate',
             injectRegister: 'auto',
             manifest: {
-                name: 'Brew & Bytes POS',
-                short_name: 'B&B POS',
-                description: 'Lightweight POS for UMKM Coffee Shops',
+                name: 'POSO',
+                short_name: 'POSO',
+                description: 'Lightweight POS System',
                 theme_color: '#d97706',
                 icons: [
                     {
-                        src: '/favicon.svg',
+                        src: '/logoPOS.png',
                         sizes: '192x192',
-                        type: 'image/svg+xml'
+                        type: 'image/png'
                     },
                     {
-                        src: '/favicon.svg',
+                        src: '/logoPOS.png',
                         sizes: '512x512',
-                        type: 'image/svg+xml'
+                        type: 'image/png'
                     }
                 ]
             },
