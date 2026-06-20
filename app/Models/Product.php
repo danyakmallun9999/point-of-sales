@@ -2,19 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
+#[Fillable([
+    'category_id',
+    'name',
+    'description',
+    'price',
+    'stock',
+    'image',
+])]
 class Product extends Model
 {
-    protected $fillable = [
-        'category_id',
-        'name',
-        'description',
-        'price',
-        'stock',
-        'image',
-    ];
-
     /**
      * Get the attributes that should be cast.
      *

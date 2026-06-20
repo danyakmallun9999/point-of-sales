@@ -2,24 +2,24 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
+#[Fillable([
+    'user_id',
+    'customer_name',
+    'subtotal',
+    'discount_amount',
+    'tax_amount',
+    'total_price',
+    'payment_method',
+    'payment_status',
+    'reference_number',
+    'notes',
+    'created_at',
+])]
 class Order extends Model
 {
-    protected $fillable = [
-        'user_id',
-        'customer_name',
-        'subtotal',
-        'discount_amount',
-        'tax_amount',
-        'total_price',
-        'payment_method',
-        'payment_status',
-        'reference_number',
-        'notes',
-        'created_at',
-    ];
-
     /**
      * Get the user who placed the order.
      *

@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
+#[Fillable(['name', 'description'])]
 class Category extends Model
 {
-    protected $fillable = ['name', 'description'];
-
     /**
      * Get the products for the category.
      *
