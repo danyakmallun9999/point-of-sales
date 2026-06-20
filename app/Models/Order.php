@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
@@ -20,6 +21,9 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 class Order extends Model
 {
+    /** @use HasFactory<\Database\Factories\OrderFactory> */
+    use HasFactory;
+
     /**
      * Get the user who placed the order.
      *
