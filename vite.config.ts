@@ -54,6 +54,34 @@ export default defineConfig({
                                 statuses: [0, 200]
                             }
                         }
+                    },
+                    {
+                        urlPattern: /\/storage\/products\/.*/i,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'product-images-cache',
+                            expiration: {
+                                maxEntries: 100,
+                                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
+                    },
+                    {
+                        urlPattern: /\/logoPOS\.png$/i,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'brand-logo-cache',
+                            expiration: {
+                                maxEntries: 5,
+                                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
+                            }
+                        }
                     }
                 ]
             }

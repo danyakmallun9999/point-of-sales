@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { Download, FileDown, TrendingUp, TrendingDown, Filter } from 'lucide-react';
+import { Download, FileDown, TrendingUp, TrendingDown, Filter, Printer, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +18,7 @@ interface Props {
     };
     topProducts: any[];
     dailySales: any[];
+    shifts: any[];
     filters: {
         start_date: string;
         end_date: string;
@@ -30,7 +31,7 @@ const breadcrumbs = [
     { title: 'Financial Reports', href: '/management/reports' },
 ];
 
-export default function ReportIndex({ summary, topProducts, dailySales, filters }: Props) {
+export default function ReportIndex({ summary, topProducts, dailySales, shifts = [], filters }: Props) {
     const [startDate, setStartDate] = useState(filters.start_date);
     const [endDate, setEndDate] = useState(filters.end_date);
 
@@ -40,6 +41,10 @@ export default function ReportIndex({ summary, topProducts, dailySales, filters 
 
     const handleExport = () => {
         window.location.href = `/management/reports/export?start_date=${startDate}&end_date=${endDate}`;
+    };
+
+    const handlePrint = () => {
+        window.open(`/management/reports/print?start_date=${startDate}&end_date=${endDate}`, '_blank');
     };
 
     return (
@@ -62,6 +67,9 @@ export default function ReportIndex({ summary, topProducts, dailySales, filters 
                         <Button size="sm" onClick={handleFilter} className="h-8">Apply</Button>
                         <Button size="sm" variant="outline" onClick={handleExport} className="h-8">
                             <FileDown className="w-4 h-4 mr-2" /> Export CSV
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={handlePrint} className="h-8">
+                            <Printer className="w-4 h-4 mr-2" /> Print PDF
                         </Button>
                     </div>
                 </div>
@@ -157,6 +165,77 @@ export default function ReportIndex({ summary, topProducts, dailySales, filters 
                         </CardContent>
                     </Card>
                 </div>
+
+                <Card className="border border-border/50 shadow-sm mt-6">
+                    <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+                            <Clock className="w-5 h-5 text-primary shrink-0" />
+                            Cashier Shift History
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-20 text-center">ID</TableHead>
+                                    <TableHead>Cashier</TableHead>
+                                    <TableHead>Outlet</TableHead>
+                                    <TableHead className="text-right">Opening Cash</TableHead>
+                                    <TableHead className="text-right">Expected</TableHead>
+                                    <TableHead className="text-right">Actual</TableHead>
+                                    <TableHead className="text-right">Variance</TableHead>
+                                    <TableHead className="text-center">Status</TableHead>
+                                    <TableHead className="text-center">Time Opened / Closed</TableHead>
+                                    <TableHead className="text-right">Action</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {shifts.map((shift, i) => {
+                                    const variance = parseFloat(shift.end_amount_actual) - parseFloat(shift.end_amount_expected);
+                                    return (
+                                        <TableRow key={i}>
+                                            <TableCell className="text-center font-bold font-mono text-xs">#{shift.id}</TableCell>
+                                            <TableCell className="font-medium">{shift.user?.name || 'Unknown'}</TableCell>
+                                            <TableCell>{shift.outlet?.name || 'Global'}</TableCell>
+                                            <TableCell className="text-right font-mono text-xs">Rp {parseFloat(shift.start_amount).toLocaleString()}</TableCell>
+                                            <TableCell className="text-right font-mono text-xs">Rp {parseFloat(shift.end_amount_expected).toLocaleString()}</TableCell>
+                                            <TableCell className="text-right font-mono text-xs">Rp {parseFloat(shift.end_amount_actual).toLocaleString()}</TableCell>
+                                            <TableCell className={`text-right font-mono text-xs font-bold ${variance < 0 ? 'text-destructive' : (variance > 0 ? 'text-emerald-600 dark:text-emerald-400' : '')}`}>
+                                                {variance >= 0 ? '+' : ''}Rp {variance.toLocaleString()}
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${shift.status === 'closed' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'}`}>
+                                                    {shift.status}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-center text-xs text-muted-foreground whitespace-nowrap leading-relaxed">
+                                                <div>Buka: {new Date(shift.opened_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}</div>
+                                                {shift.closed_at && <div>Tutup: {new Date(shift.closed_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}</div>}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => window.open(`/pos/shift/${shift.id}/print`, '_blank')}
+                                                    className="h-8 px-2 hover:text-primary"
+                                                >
+                                                    <Printer className="w-3.5 h-3.5 mr-1" /> Print
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                                {shifts.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={10} className="text-center py-10 text-muted-foreground italic">
+                                            No cashier shifts recorded for this period.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
             </div>
         </AppSidebarLayout>
     );

@@ -35,12 +35,37 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $settings = [];
+        try {
+            if (\Schema::hasTable('settings')) {
+                $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
+            }
+        } catch (\Throwable $e) {
+            // Table might not exist yet
+        }
+
+        $outlets = [];
+        try {
+            if (\Schema::hasTable('outlets')) {
+                $outlets = \App\Models\Outlet::all()->toArray();
+            }
+        } catch (\Throwable $e) {
+            // Table might not exist yet
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? array_merge($request->user()->toArray(), [
+                    'outlet' => $request->user()->outlet ? $request->user()->outlet->toArray() : null,
+                    'active_shift' => \App\Models\CashierShift::where('user_id', $request->user()->id)
+                        ->where('status', 'open')
+                        ->first(),
+                ]) : null,
             ],
+            'settings' => $settings,
+            'outlets' => $outlets,
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),
                 'order' => fn () => $request->session()->get('order'),

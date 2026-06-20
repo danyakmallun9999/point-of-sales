@@ -28,6 +28,8 @@ export interface DBOfflineOrder {
     }[];
     created_at: string;
     synced: number; // 0 for no, 1 for yes
+    sync_failed?: number; // 0 or 1
+    sync_error?: string;
 }
 
 export async function initDB(): Promise<IDBPDatabase> {
@@ -78,14 +80,22 @@ export async function saveOfflineOrder(order: any) {
     return db.add('orders', {
         ...order,
         created_at: new Date().toISOString(),
-        synced: 0
+        synced: 0,
+        sync_failed: 0,
+        sync_error: ''
     });
 }
 
 export async function getUnsyncedOrders() {
     const db = await initDB();
     const all = await db.getAll('orders');
-    return all.filter(o => o.synced === 0);
+    return all.filter(o => o.synced === 0 && o.sync_failed !== 1);
+}
+
+export async function getFailedOrders() {
+    const db = await initDB();
+    const all = await db.getAll('orders');
+    return all.filter(o => o.synced === 0 && o.sync_failed === 1);
 }
 
 export async function markOrderSynced(id: number) {
@@ -93,6 +103,23 @@ export async function markOrderSynced(id: number) {
     const order = await db.get('orders', id);
     if (order) {
         order.synced = 1;
+        order.sync_failed = 0;
+        order.sync_error = '';
         await db.put('orders', order);
     }
+}
+
+export async function markOrderSyncFailed(id: number, error: string) {
+    const db = await initDB();
+    const order = await db.get('orders', id);
+    if (order) {
+        order.sync_failed = 1;
+        order.sync_error = error;
+        await db.put('orders', order);
+    }
+}
+
+export async function deleteOfflineOrder(id: number) {
+    const db = await initDB();
+    return db.delete('orders', id);
 }

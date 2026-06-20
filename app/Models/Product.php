@@ -63,18 +63,24 @@ class Product extends Model
     }
 
     /**
-     * Deduct stock using FIFO algorithm.
+     * Deduct stock using FEFO (First Expired, First Out) algorithm.
      */
-    public function deductStockFIFO(int $quantity): void
+    public function deductStockFIFO(int $quantity, ?int $outletId = null): void
     {
         $remainingToDeduct = $quantity;
 
-        // Fetch remaining batches ordered by oldest first
-        $batches = $this->inventoryBatches()
+        // Fetch remaining batches ordered by expiration date (earliest first, nulls last)
+        $query = $this->inventoryBatches()
             ->where('remaining_quantity', '>', 0)
-            ->orderBy('created_at', 'asc')
-            ->lockForUpdate() // Avoid race conditions in transaction
-            ->get();
+            ->orderByRaw('CASE WHEN expired_at IS NULL THEN 1 ELSE 0 END ASC')
+            ->orderBy('expired_at', 'asc')
+            ->orderBy('created_at', 'asc');
+
+        if ($outletId !== null) {
+            $query->where('outlet_id', $outletId);
+        }
+
+        $batches = $query->lockForUpdate()->get();
 
         foreach ($batches as $batch) {
             if ($remainingToDeduct <= 0) {

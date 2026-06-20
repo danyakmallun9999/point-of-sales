@@ -22,6 +22,8 @@ class Order extends Model
         'reference_number',
         'notes',
         'created_at',
+        'outlet_id',
+        'cashier_shift_id',
     ];
 
     /**
@@ -32,6 +34,16 @@ class Order extends Model
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function outlet(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
+    }
+
+    public function cashierShift(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(CashierShift::class, 'cashier_shift_id');
     }
 
     /**
@@ -56,7 +68,7 @@ class Order extends Model
         $this->load('items.product');
         foreach ($this->items as $item) {
             if ($item->product) {
-                $item->product->deductStockFIFO($item->quantity);
+                $item->product->deductStockFIFO($item->quantity, $this->outlet_id);
             }
         }
 

@@ -1,5 +1,5 @@
-import { Head, router } from '@inertiajs/react';
-import { Coffee, Plus, Minus, Trash2, Search, QrCode, Banknote, Loader2, CheckCircle2, WifiOff, RefreshCw, Printer, X, ShoppingBag } from 'lucide-react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { Coffee, Plus, Minus, Trash2, Search, QrCode, Banknote, Loader2, CheckCircle2, WifiOff, RefreshCw, Printer, X, ShoppingBag, Clock, Lock, ShieldAlert, AlertTriangle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createQrisCharge, checkStatus } from '@/actions/App/Http/Controllers/PaymentController';
 import { store as storeOrder } from '@/actions/App/Http/Controllers/POSController';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
-import { syncCatalog, getOfflineCatalog, saveOfflineOrder, getUnsyncedOrders, markOrderSynced } from '@/lib/db';
+import { syncCatalog, getOfflineCatalog, saveOfflineOrder, getUnsyncedOrders, markOrderSynced, markOrderSyncFailed, getFailedOrders, deleteOfflineOrder } from '@/lib/db';
 
 interface Product {
     id: number;
@@ -31,6 +31,13 @@ interface Props {
 }
 
 export default function Terminal({ products: initialProducts, categories: initialCategories }: Props) {
+    const { settings, auth } = usePage().props as any;
+    const taxRate = parseFloat(settings?.tax_rate ?? '0.1');
+    const receiptHeader = settings?.receipt_header ?? 'POSO';
+    const receiptFooter = settings?.receipt_footer ?? 'Jl. Teknologi No. 123, Indonesia';
+    const userOutletName = auth?.user?.outlet?.name ?? 'POSO Central';
+
+    const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
     const formatPrice = (price: number | string) => {
         return Number(price).toLocaleString('id-ID', {
             minimumFractionDigits: 0,
@@ -60,6 +67,34 @@ export default function Terminal({ products: initialProducts, categories: initia
     const [cartOpen, setCartOpen] = useState(false);
     const [justAddedId, setJustAddedId] = useState<number | null>(null);
 
+    // Cashier Shift States
+    const activeShift = auth?.user?.active_shift;
+    const isCashier = auth?.user?.role === 'cashier';
+    const [showShiftModal, setShowShiftModal] = useState(false);
+    const [shiftTotals, setShiftTotals] = useState<{ start_amount: number; total_cash_sales: number; total_qris_sales: number; expected_amount: number } | null>(null);
+    const [isLoadingTotals, setIsLoadingTotals] = useState(false);
+    const [startAmount, setStartAmount] = useState('0');
+    const [endAmountActual, setEndAmountActual] = useState('0');
+
+    useEffect(() => {
+        if (showShiftModal && activeShift) {
+            setIsLoadingTotals(true);
+            fetch('/pos/shift/current-totals')
+                .then((res) => {
+                    if (res.ok) {
+                        return res.json();
+                    }
+                    throw new Error('Gagal memuat total shift');
+                })
+                .then((data) => {
+                    setShiftTotals(data);
+                    setEndAmountActual(String(data.expected_amount));
+                })
+                .catch((err) => console.error(err))
+                .finally(() => setIsLoadingTotals(false));
+        }
+    }, [showShiftModal, activeShift]);
+
     useEffect(() => {
         if (isOnline) {
             syncCatalog(initialProducts, initialCategories);
@@ -85,11 +120,43 @@ export default function Terminal({ products: initialProducts, categories: initia
         if (c.length > 0) setCategories(c);
     };
 
+    const [failedOrders, setFailedOrders] = useState<any[]>([]);
+    const [showConflictModal, setShowConflictModal] = useState(false);
+
+    const loadFailedOrders = async () => {
+        const failed = await getFailedOrders();
+        setFailedOrders(failed);
+    };
+
+    const handleResolveConflict = async (id: number) => {
+        if (confirm('Batalkan pesanan offline ini dan lakukan refund (hapus dari database lokal)?')) {
+            await deleteOfflineOrder(id);
+            setToast({ type: 'success', message: 'Transaksi offline berhasil dibatalkan.' });
+            setTimeout(() => setToast(null), 3000);
+            await loadFailedOrders();
+            if ((await getFailedOrders()).length === 0) {
+                setShowConflictModal(false);
+            }
+        }
+    };
+
+    useEffect(() => {
+        loadFailedOrders();
+    }, []);
+
     const pushUnsyncedOrders = async () => {
         const unsynced = await getUnsyncedOrders();
-        if (unsynced.length === 0) return;
+        if (unsynced.length === 0) {
+            return;
+        }
 
         setIsSyncing(true);
+        setToast({ type: 'info', message: `Menyinkronkan ${unsynced.length} pesanan offline...` });
+
+        let successCount = 0;
+        let conflictCount = 0;
+        let networkCount = 0;
+
         for (const order of unsynced) {
             try {
                 const response = await fetch(storeOrder().url, {
@@ -102,12 +169,37 @@ export default function Terminal({ products: initialProducts, categories: initia
                 });
                 if (response.ok) {
                     await markOrderSynced(order.id!);
+                    successCount++;
+                } else if (response.status === 422) {
+                    const errData = await response.json().catch(() => null);
+                    const errMsg = errData?.errors?.items || 'Stok produk habis / tidak mencukupi.';
+                    await markOrderSyncFailed(order.id!, errMsg);
+                    conflictCount++;
+                } else {
+                    networkCount++;
                 }
             } catch (error) {
                 console.error('Sync failed', error);
+                networkCount++;
             }
         }
+
         setIsSyncing(false);
+        await loadFailedOrders();
+
+        if (conflictCount > 0 || networkCount > 0) {
+            setToast({
+                type: 'error',
+                message: `Sinkronisasi: ${successCount} sukses, ${conflictCount} konflik stok (gagal), ${networkCount} kendala koneksi.`
+            });
+        } else {
+            setToast({
+                type: 'success',
+                message: `Semua (${successCount}) pesanan offline berhasil disinkronkan!`
+            });
+        }
+
+        setTimeout(() => setToast(null), 5000);
     };
 
     const addToCart = (product: Product) => {
@@ -153,7 +245,7 @@ export default function Terminal({ products: initialProducts, categories: initia
     };
 
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const tax = Math.max(0, (subtotal - discount) * 0.1);
+    const tax = Math.max(0, (subtotal - discount) * taxRate);
     const total = Math.max(0, subtotal - discount + tax);
     const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -490,6 +582,24 @@ export default function Terminal({ products: initialProducts, categories: initia
                                     <RefreshCw className="w-3 h-3 animate-spin" /> Syncing…
                                 </span>
                             )}
+                            {activeShift && (
+                                <button
+                                    onClick={() => setShowShiftModal(true)}
+                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground bg-muted hover:bg-muted/80 border border-border px-3 py-1.5 rounded-full transition-colors cursor-pointer"
+                                >
+                                    <Clock className="w-3.5 h-3.5 text-amber-500" />
+                                    <span>Shift #{activeShift.id}</span>
+                                </button>
+                            )}
+                            {failedOrders.length > 0 && (
+                                <button
+                                    onClick={() => setShowConflictModal(true)}
+                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-full transition-colors cursor-pointer animate-pulse"
+                                >
+                                    <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
+                                    <span>Konflik Stok ({failedOrders.length})</span>
+                                </button>
+                            )}
                         </div>
 
                         {/* Search */}
@@ -503,6 +613,27 @@ export default function Terminal({ products: initialProducts, categories: initia
                                 className="w-full pl-9 pr-4 h-9 rounded-full bg-muted/50 border-0 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
                             />
                         </div>
+
+                        {/* Shift Info mobile */}
+                        {activeShift && (
+                            <button
+                                onClick={() => setShowShiftModal(true)}
+                                className="sm:hidden w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center shrink-0 transition-colors hover:bg-muted/85 cursor-pointer"
+                                aria-label="Info Shift"
+                            >
+                                <Clock className="w-5 h-5 text-amber-500" />
+                            </button>
+                        )}
+
+                        {failedOrders.length > 0 && (
+                            <button
+                                onClick={() => setShowConflictModal(true)}
+                                className="sm:hidden w-10 h-10 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0 transition-colors hover:bg-rose-500/20 cursor-pointer animate-pulse"
+                                aria-label="Konflik Stok"
+                            >
+                                <ShieldAlert className="w-5 h-5 text-rose-500" />
+                            </button>
+                        )}
 
                         {/* Tombol keranjang mobile */}
                         <Sheet open={cartOpen} onOpenChange={setCartOpen}>
@@ -671,8 +802,9 @@ export default function Terminal({ products: initialProducts, categories: initia
 
                     <div className="px-6 py-4 max-h-[55vh] overflow-y-auto">
                         <div className="text-center mb-4">
-                            <p className="font-bold text-base text-foreground">POSO</p>
-                            <p className="text-xs text-muted-foreground">Jl. Teknologi No. 123, Indonesia</p>
+                            <p className="font-bold text-base text-foreground">{receiptHeader}</p>
+                            <p className="text-[10px] text-muted-foreground font-mono font-medium tracking-wide uppercase mb-1">Outlet: {userOutletName}</p>
+                            <p className="text-xs text-muted-foreground">{receiptFooter}</p>
                             <p className="text-xs text-muted-foreground">{new Date().toLocaleString('id-ID')}</p>
                         </div>
                         <div className="border-t border-dashed border-border pt-4 space-y-2">
@@ -733,6 +865,235 @@ export default function Terminal({ products: initialProducts, categories: initia
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* ── Buka Shift Modal (Enforced for Cashier) ── */}
+            <Dialog open={isCashier && !activeShift} onOpenChange={() => {}}>
+                <DialogContent className="sm:max-w-sm bg-card border-border p-6 rounded-2xl [&>button]:hidden">
+                    <div className="text-center mb-4">
+                        <div className="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Lock className="w-6 h-6" />
+                        </div>
+                        <h2 className="text-xl font-bold text-foreground">Buka Shift Kasir</h2>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Anda harus membuka shift kasir baru sebelum dapat mencatat transaksi.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="start_amount" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Uang Modal Awal (Laci)</Label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">Rp</span>
+                                <Input
+                                    id="start_amount"
+                                    type="number"
+                                    className="pl-9 font-bold"
+                                    value={startAmount}
+                                    onChange={(e) => setStartAmount(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => {
+                                router.post('/pos/shift/open', { start_amount: Number(startAmount) || 0 }, {
+                                    onSuccess: () => {
+                                        setToast({ type: 'success', message: 'Shift kasir berhasil dibuka!' });
+                                        setTimeout(() => setToast(null), 3000);
+                                    },
+                                    onError: (err) => {
+                                        alert('Gagal membuka shift: ' + Object.values(err).join(', '));
+                                    }
+                                });
+                            }}
+                            className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/20 cursor-pointer"
+                        >
+                            Mulai Shift Baru
+                        </button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* ── Detail & Tutup Shift Modal ── */}
+            <Dialog open={showShiftModal} onOpenChange={setShowShiftModal}>
+                <DialogContent className="sm:max-w-md bg-card border-border p-6 rounded-2xl">
+                    <div className="flex items-center gap-3 border-b border-border pb-3 mb-4">
+                        <Clock className="w-5 h-5 text-amber-500" />
+                        <div>
+                            <h2 className="text-lg font-bold text-foreground">Detail Shift #{activeShift?.id}</h2>
+                            <p className="text-xs text-muted-foreground">Status: Open</p>
+                        </div>
+                    </div>
+
+                    {isLoadingTotals ? (
+                        <div className="flex flex-col items-center justify-center py-8 gap-2">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                            <span className="text-xs text-muted-foreground">Menghitung akumulasi penjualan...</span>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-muted/40 rounded-xl p-3 border border-border/50">
+                                    <div className="text-[10px] text-muted-foreground uppercase font-bold">Modal Awal</div>
+                                    <div className="text-base font-bold text-foreground mt-0.5 font-mono">
+                                        Rp {formatPrice(shiftTotals?.start_amount ?? 0)}
+                                    </div>
+                                </div>
+                                <div className="bg-muted/40 rounded-xl p-3 border border-border/50">
+                                    <div className="text-[10px] text-muted-foreground uppercase font-bold">Ekspektasi Uang di Laci</div>
+                                    <div className="text-base font-bold text-foreground mt-0.5 font-mono">
+                                        Rp {formatPrice(shiftTotals?.expected_amount ?? 0)}
+                                    </div>
+                                </div>
+                                <div className="bg-muted/40 rounded-xl p-3 border border-border/50">
+                                    <div className="text-[10px] text-muted-foreground uppercase font-bold">Penjualan Tunai</div>
+                                    <div className="text-base font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 font-mono">
+                                        Rp {formatPrice(shiftTotals?.total_cash_sales ?? 0)}
+                                    </div>
+                                </div>
+                                <div className="bg-muted/40 rounded-xl p-3 border border-border/50">
+                                    <div className="text-[10px] text-muted-foreground uppercase font-bold">Penjualan QRIS</div>
+                                    <div className="text-base font-bold text-primary mt-0.5 font-mono">
+                                        Rp {formatPrice(shiftTotals?.total_qris_sales ?? 0)}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 border-t border-border pt-4">
+                                <Label htmlFor="end_amount_actual" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Uang Tunai Aktual di Laci (Dihitung)</Label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">Rp</span>
+                                    <Input
+                                        id="end_amount_actual"
+                                        type="number"
+                                        className="pl-9 font-bold"
+                                        value={endAmountActual}
+                                        onChange={(e) => setEndAmountActual(e.target.value)}
+                                    />
+                                </div>
+                                <p className="text-[10px] text-muted-foreground">
+                                    Hitung manual semua uang fisik di laci mesin kasir dan masukkan nilainya di atas.
+                                </p>
+                            </div>
+
+                            <div className="flex gap-2 pt-2">
+                                <button
+                                    onClick={() => setShowShiftModal(false)}
+                                    className="flex-1 h-11 rounded-xl border border-border text-foreground hover:bg-muted text-sm font-semibold transition-colors cursor-pointer"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        router.post('/pos/shift/close', { end_amount_actual: Number(endAmountActual) || 0 }, {
+                                            onSuccess: (page) => {
+                                                setShowShiftModal(false);
+                                                setToast({ type: 'success', message: 'Shift kasir berhasil ditutup!' });
+                                                setTimeout(() => setToast(null), 3000);
+
+                                                const printShiftId = (page.props.flash as any)?.print_shift_id;
+                                                if (printShiftId) {
+                                                    window.open(`/pos/shift/${printShiftId}/print`, '_blank');
+                                                }
+                                            },
+                                            onError: (err) => {
+                                                alert('Gagal menutup shift: ' + Object.values(err).join(', '));
+                                            }
+                                        });
+                                    }}
+                                    className="flex-1 h-11 rounded-xl bg-destructive text-destructive-foreground font-semibold hover:bg-destructive/90 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                                >
+                                    Tutup Shift
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* ── Conflict Resolution Dialog ── */}
+            <Dialog open={showConflictModal} onOpenChange={setShowConflictModal}>
+                <DialogContent className="sm:max-w-md bg-card border-border p-6 rounded-2xl max-h-[80vh] flex flex-col overflow-hidden">
+                    <div className="flex items-center gap-3 border-b border-border pb-3 mb-4 shrink-0">
+                        <AlertTriangle className="w-5 h-5 text-rose-500" />
+                        <div>
+                            <h2 className="text-lg font-bold text-foreground">Resolusi Konflik Stok Offline</h2>
+                            <p className="text-xs text-muted-foreground">Ada {failedOrders.length} transaksi yang gagal disinkronkan</p>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                            Beberapa transaksi yang dicatat saat offline tidak dapat disimpan ke server karena stok produk tidak mencukupi saat koneksi kembali. Hubungi pelanggan dan lakukan pembatalan/refund di bawah ini.
+                        </p>
+
+                        {failedOrders.map((order, i) => (
+                            <div key={i} className="border border-border rounded-xl p-4 bg-muted/30 space-y-3">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <div className="font-bold text-sm">{order.customer_name}</div>
+                                        <div className="text-[10px] text-muted-foreground font-mono">
+                                            {new Date(order.created_at).toLocaleString('id-ID')}
+                                        </div>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded uppercase">
+                                        Stok Habis
+                                    </span>
+                                </div>
+
+                                <div className="text-xs border-t border-dashed border-border/80 pt-2 space-y-1">
+                                    <div className="font-semibold text-muted-foreground mb-1">Daftar Item:</div>
+                                    {order.items.map((item: any, idx: number) => {
+                                        const p = products.find(prod => prod.id === item.product_id);
+                                        return (
+                                            <div key={idx} className="flex justify-between">
+                                                <span>{item.quantity}x {p?.name || 'Item'}</span>
+                                                <span className="font-mono">Rp {formatPrice(item.quantity * (p?.price || 0))}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="flex gap-2 border-t border-border pt-3">
+                                    <button
+                                        onClick={() => handleResolveConflict(order.id!)}
+                                        className="w-full h-9 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                        Batalkan & Refund
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="pt-4 border-t border-border shrink-0 flex justify-end">
+                        <button
+                            onClick={() => setShowConflictModal(false)}
+                            className="h-10 px-4 rounded-xl border border-border text-foreground hover:bg-muted text-sm font-semibold transition-colors cursor-pointer"
+                        >
+                            Tutup
+                        </button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {toast && (
+                <div
+                    className={`fixed bottom-4 right-4 z-50 p-4 rounded-xl shadow-xl border text-sm font-semibold flex items-center gap-3 transition-all duration-300 transform translate-y-0 scale-100 ${
+                        toast.type === 'success'
+                            ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-500 dark:bg-emerald-500/20 dark:text-emerald-400'
+                            : toast.type === 'error'
+                            ? 'bg-rose-500/10 border-rose-500/25 text-rose-500 dark:bg-rose-500/20 dark:text-rose-400'
+                            : 'bg-amber-500/10 border-amber-500/25 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400'
+                    }`}
+                >
+                    <span className={`w-2 h-2 rounded-full ${
+                        toast.type === 'success' ? 'bg-emerald-500 animate-ping' : toast.type === 'error' ? 'bg-rose-500' : 'bg-amber-500 animate-pulse'
+                    }`} />
+                    <span>{toast.message}</span>
+                </div>
+            )}
         </AppShell>
     );
 }

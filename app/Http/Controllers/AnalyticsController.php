@@ -12,9 +12,16 @@ class AnalyticsController extends Controller
      */
     public function index(): Response
     {
-        $aprioriService = new AprioriService;
-        // Menggunakan parameter lebih longgar (Support 5%, Confidence 30%)
-        $aprioriInsights = $aprioriService->generateRecommendations(0.05, 0.3);
+        $cached = \App\Models\Setting::get('apriori_insights');
+
+        if ($cached !== null) {
+            $aprioriInsights = json_decode($cached, true);
+        } else {
+            // Fallback: compute on-the-fly if cache is empty, then store it
+            $aprioriService = new AprioriService;
+            $aprioriInsights = $aprioriService->generateRecommendations(0.05, 0.3);
+            \App\Models\Setting::set('apriori_insights', json_encode($aprioriInsights));
+        }
 
         return inertia('management/analytics/index', [
             'aprioriInsights' => $aprioriInsights,

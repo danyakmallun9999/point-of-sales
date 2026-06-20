@@ -15,7 +15,14 @@ class InventoryBatch extends Model
         'initial_quantity',
         'remaining_quantity',
         'buy_price',
+        'outlet_id',
+        'expired_at',
     ];
+
+    public function outlet(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -28,6 +35,7 @@ class InventoryBatch extends Model
             'initial_quantity' => 'integer',
             'remaining_quantity' => 'integer',
             'buy_price' => 'float',
+            'expired_at' => 'date',
         ];
     }
 

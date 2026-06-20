@@ -1,5 +1,5 @@
-import { Head, useForm } from '@inertiajs/react';
-import { Edit, Plus, Trash2, Coffee, ImageIcon } from 'lucide-react';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { Edit, Plus, Trash2, Coffee, ImageIcon, Layers, Package, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { store, update, destroy } from '@/actions/App/Http/Controllers/ProductController';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,62 @@ export default function ProductIndex({ products, categories }: Props) {
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
+
+    // Restock & Batch Management States
+    const { outlets = [] } = usePage().props as any;
+    const [isRestockOpen, setIsRestockOpen] = useState(false);
+    const [selectedProductForRestock, setSelectedProductForRestock] = useState<Product | null>(null);
+    const [batches, setBatches] = useState<any[]>([]);
+    const [isLoadingBatches, setIsLoadingBatches] = useState(false);
+
+    const restockForm = useForm({
+        outlet_id: '',
+        initial_quantity: '',
+        buy_price: '',
+        expired_at: '',
+    });
+
+    const openRestock = (product: Product) => {
+        setSelectedProductForRestock(product);
+        setIsRestockOpen(true);
+        setIsLoadingBatches(true);
+        restockForm.setData({
+            outlet_id: outlets[0]?.id?.toString() || '',
+            initial_quantity: '',
+            buy_price: '',
+            expired_at: '',
+        });
+        restockForm.clearErrors();
+
+        fetch(`/management/products/${product.id}/batches`)
+            .then((res) => {
+                if (res.ok) {
+                    return res.json();
+                }
+                throw new Error('Failed to load batches');
+            })
+            .then((data) => setBatches(data))
+            .catch((err) => console.error(err))
+            .finally(() => setIsLoadingBatches(false));
+    };
+
+    const submitRestock = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedProductForRestock) {
+            return;
+        }
+
+        restockForm.post(`/management/products/${selectedProductForRestock.id}/batches`, {
+            onSuccess: () => {
+                restockForm.reset('initial_quantity', 'buy_price', 'expired_at');
+                // Refresh the batch list
+                fetch(`/management/products/${selectedProductForRestock.id}/batches`)
+                    .then((res) => res.json())
+                    .then((data) => setBatches(data))
+                    .catch((err) => console.error(err));
+            },
+        });
+    };
 
     const addForm = useForm({
         name: '',
@@ -212,6 +268,9 @@ export default function ProductIndex({ products, categories }: Props) {
                                         </span>
                                     </TableCell>
                                     <TableCell className="text-right space-x-2">
+                                        <Button variant="ghost" size="icon" onClick={() => openRestock(product)} title="Restock / Batches">
+                                            <Layers className="w-4 h-4 text-primary" />
+                                        </Button>
                                         <Button variant="ghost" size="icon" onClick={() => openEdit(product)}>
                                             <Edit className="w-4 h-4" />
                                         </Button>
@@ -274,6 +333,152 @@ export default function ProductIndex({ products, categories }: Props) {
                                 <Button type="submit" disabled={editForm.processing}>Update Product</Button>
                             </DialogFooter>
                         </form>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Restock & Batches Dialog */}
+                <Dialog open={isRestockOpen} onOpenChange={setIsRestockOpen}>
+                    <DialogContent className="sm:max-w-[650px] max-h-[85vh] flex flex-col p-0 overflow-hidden bg-card border-border">
+                        <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
+                            <DialogTitle className="flex items-center gap-2 text-foreground">
+                                <Package className="w-5 h-5 text-primary" />
+                                Restock & Kelola Batch: {selectedProductForRestock?.name}
+                            </DialogTitle>
+                            <DialogDescription className="text-muted-foreground">
+                                Tambahkan stok baru ke outlet spesifik dan kelola batch kedaluwarsa (FEFO).
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="flex-1 overflow-y-auto px-6 py-2 space-y-6">
+                            {/* Form Input Batch Baru */}
+                            <form onSubmit={submitRestock} className="bg-muted/40 rounded-xl p-4 border border-border/50 space-y-4">
+                                <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Tambah Stok Baru</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid gap-1.5">
+                                        <Label htmlFor="restock-outlet">Outlet Cabang</Label>
+                                        <Select
+                                            value={restockForm.data.outlet_id}
+                                            onValueChange={(v) => restockForm.setData('outlet_id', v)}
+                                        >
+                                            <SelectTrigger id="restock-outlet" className="bg-card border-border">
+                                                <SelectValue placeholder="Pilih Outlet" />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-card border-border">
+                                                {outlets.map((o: any) => (
+                                                    <SelectItem key={o.id} value={o.id.toString()}>{o.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {restockForm.errors.outlet_id && <p className="text-xs text-destructive">{restockForm.errors.outlet_id}</p>}
+                                    </div>
+                                    <div className="grid gap-1.5">
+                                        <Label htmlFor="restock-qty">Jumlah (Qty)</Label>
+                                        <Input
+                                            id="restock-qty"
+                                            type="number"
+                                            className="bg-card border-border font-bold"
+                                            value={restockForm.data.initial_quantity}
+                                            onChange={(e) => restockForm.setData('initial_quantity', e.target.value)}
+                                            placeholder="50"
+                                        />
+                                        {restockForm.errors.initial_quantity && <p className="text-xs text-destructive">{restockForm.errors.initial_quantity}</p>}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid gap-1.5">
+                                        <Label htmlFor="restock-price">Harga Beli per Unit (Rp)</Label>
+                                        <Input
+                                            id="restock-price"
+                                            type="number"
+                                            className="bg-card border-border"
+                                            value={restockForm.data.buy_price}
+                                            onChange={(e) => restockForm.setData('buy_price', e.target.value)}
+                                            placeholder="12000"
+                                        />
+                                        {restockForm.errors.buy_price && <p className="text-xs text-destructive">{restockForm.errors.buy_price}</p>}
+                                    </div>
+                                    <div className="grid gap-1.5">
+                                        <Label htmlFor="restock-exp">Tanggal Kedaluwarsa</Label>
+                                        <Input
+                                            id="restock-exp"
+                                            type="date"
+                                            className="bg-card border-border"
+                                            value={restockForm.data.expired_at}
+                                            onChange={(e) => restockForm.setData('expired_at', e.target.value)}
+                                        />
+                                        {restockForm.errors.expired_at && <p className="text-xs text-destructive">{restockForm.errors.expired_at}</p>}
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end">
+                                    <Button type="submit" size="sm" disabled={restockForm.processing} className="h-9">
+                                        {restockForm.processing ? 'Menyimpan...' : 'Simpan Batch Baru'}
+                                    </Button>
+                                </div>
+                            </form>
+
+                            {/* Daftar Batch Aktif */}
+                            <div className="space-y-3">
+                                <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Batch Inventaris Aktif</h3>
+                                {isLoadingBatches ? (
+                                    <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground text-sm">
+                                        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                                        <span>Memuat daftar batch...</span>
+                                    </div>
+                                ) : (
+                                    <div className="border border-border rounded-lg overflow-hidden bg-card">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow className="bg-muted/30">
+                                                    <TableHead>Outlet</TableHead>
+                                                    <TableHead className="text-center">Sisa Stok</TableHead>
+                                                    <TableHead className="text-right">Harga Beli</TableHead>
+                                                    <TableHead className="text-center">Tgl Kedaluwarsa</TableHead>
+                                                    <TableHead className="text-center">Tgl Dibuat</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {batches.map((batch, i) => (
+                                                    <TableRow key={i}>
+                                                        <TableCell className="font-semibold">{batch.outlet?.name || 'Global'}</TableCell>
+                                                        <TableCell className="text-center font-bold">
+                                                            {batch.remaining_quantity} / {batch.initial_quantity} unit
+                                                        </TableCell>
+                                                        <TableCell className="text-right font-mono">Rp {batch.buy_price.toLocaleString()}</TableCell>
+                                                        <TableCell className="text-center font-mono text-sm">
+                                                            {batch.expired_at ? (
+                                                                <span className="text-amber-500 font-bold">
+                                                                    {new Date(batch.expired_at).toLocaleDateString('id-ID', { dateStyle: 'medium' })}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-muted-foreground">-</span>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell className="text-center font-mono text-xs text-muted-foreground">
+                                                            {new Date(batch.created_at).toLocaleDateString('id-ID', { dateStyle: 'short' })}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                                {batches.length === 0 && (
+                                                    <TableRow>
+                                                        <TableCell colSpan={5} className="text-center py-6 text-muted-foreground italic text-xs">
+                                                            Belum ada batch inventaris untuk produk ini.
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <DialogFooter className="px-6 py-4 bg-muted/20 border-t border-border shrink-0">
+                            <Button onClick={() => setIsRestockOpen(false)} variant="outline" className="w-full sm:w-auto">
+                                Selesai & Tutup
+                            </Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>

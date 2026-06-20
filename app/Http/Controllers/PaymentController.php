@@ -31,7 +31,7 @@ class PaymentController extends Controller
         }
 
         $order->load('items.product');
-        
+
         $itemDetails = [];
         $calculatedGrossAmount = 0;
 
@@ -71,7 +71,7 @@ class PaymentController extends Controller
             $calculatedGrossAmount += $tax;
         }
 
-        $midtransOrderId = $order->reference_number . '-' . time();
+        $midtransOrderId = $order->reference_number.'-'.time();
 
         $params = [
             'payment_type' => 'qris',
@@ -95,7 +95,8 @@ class PaymentController extends Controller
                 'gross_amount' => $calculatedGrossAmount,
             ]));
         } catch (\Exception $e) {
-            \Log::error('Midtrans QRIS Charge Error: ' . $e->getMessage());
+            \Log::error('Midtrans QRIS Charge Error: '.$e->getMessage());
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -125,6 +126,7 @@ class PaymentController extends Controller
 
                     if ($transactionStatus === 'settlement' || $transactionStatus === 'capture') {
                         $order->markAsPaid();
+
                         return response()->json([
                             'payment_status' => 'paid',
                             'source' => 'midtrans_api',
@@ -132,7 +134,7 @@ class PaymentController extends Controller
                         ]);
                     }
                 } catch (\Exception $e) {
-                    \Log::debug('Midtrans status check: ' . $e->getMessage());
+                    \Log::debug('Midtrans status check: '.$e->getMessage());
                     // Ignore errors from Midtrans (e.g. 404 if not found yet); return pending below
                 }
             }
@@ -141,7 +143,8 @@ class PaymentController extends Controller
                 'payment_status' => $order->fresh()->payment_status,
             ]);
         } catch (\Throwable $e) {
-            \Log::error('checkStatus error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            \Log::error('checkStatus error: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
             return response()->json(['payment_status' => 'pending']);
         }
     }
@@ -152,29 +155,49 @@ class PaymentController extends Controller
     public function handleWebhook(Request $request): Response
     {
         $payload = $request->all();
-        
+
         // If we have a payload from the request, we can use it (useful for testing)
         // Otherwise, Midtrans SDK will try to read from php://input
-        if (!empty($payload)) {
+        if (! empty($payload)) {
             $transaction = $payload['transaction_status'] ?? null;
             $type = $payload['payment_type'] ?? null;
             $orderIdAndTimestamp = $payload['order_id'] ?? null;
             $fraud = $payload['fraud_status'] ?? null;
+
+            $signatureKey = $payload['signature_key'] ?? null;
+            $statusCode = $payload['status_code'] ?? null;
+            $grossAmount = $payload['gross_amount'] ?? null;
         } else {
             try {
-                $notif = new Notification();
+                $notif = new Notification;
                 $transaction = $notif->transaction_status;
                 $type = $notif->payment_type;
                 $orderIdAndTimestamp = $notif->order_id;
                 $fraud = $notif->fraud_status;
+
+                $signatureKey = $notif->signature_key ?? null;
+                $statusCode = $notif->status_code ?? null;
+                $grossAmount = $notif->gross_amount ?? null;
             } catch (\Exception $e) {
-                \Log::error('Midtrans Webhook Error: ' . $e->getMessage());
+                \Log::error('Midtrans Webhook Error: '.$e->getMessage());
+
                 return response('Invalid Notification', 400);
             }
         }
 
-        if (!$orderIdAndTimestamp) {
+        if (! $orderIdAndTimestamp) {
             return response('Missing order_id', 400);
+        }
+
+        // Verify Midtrans Signature Key using order_id + status_code + gross_amount + server_key
+        $serverKey = trim(config('services.midtrans.server_key'));
+        if ($signatureKey || ! app()->environment('testing')) {
+            $computedSignature = hash('sha512', $orderIdAndTimestamp.$statusCode.$grossAmount.$serverKey);
+            if ($signatureKey !== $computedSignature) {
+                \Log::warning("Midtrans Webhook: Invalid signature. Computed: {$computedSignature}, Received: {$signatureKey}");
+
+                return response('Invalid Signature', 403);
+            }
         }
 
         // Parse order_id from "REF-TIMESTAMP"
@@ -186,8 +209,9 @@ class PaymentController extends Controller
 
         $order = Order::where('reference_number', $referenceNumber)->first();
 
-        if (!$order) {
-            \Log::warning('Order not found for reference: ' . $referenceNumber);
+        if (! $order) {
+            \Log::warning('Order not found for reference: '.$referenceNumber);
+
             return response('Order not found', 404);
         }
 
