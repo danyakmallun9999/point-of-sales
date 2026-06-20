@@ -1,0 +1,1506 @@
+\section{BAB I}\label{bab-i}
+
+\section{PENDAHULUAN}\label{pendahuluan}
+
+\subsection{1.1 Latar Belakang}\label{latar-belakang}
+
+Perkembangan teknologi informasi telah memberikan banyak kemudahan dalam berbagai bidang usaha, termasuk pada sektor makanan dan minuman (Food and Beverage/F\&B). Salah satu kebutuhan penting dalam operasional kafe dan restoran adalah sistem yang mampu membantu proses transaksi penjualan secara cepat, akurat, dan terintegrasi.
+
+Pada banyak usaha kecil hingga menengah, proses pencatatan transaksi masih dilakukan secara manual atau menggunakan aplikasi yang memiliki keterbatasan fitur. Hal tersebut dapat menyebabkan kesalahan pencatatan, kesulitan dalam pengelolaan stok, serta keterlambatan dalam penyusunan laporan penjualan. Selain itu, data transaksi yang tersimpan sering kali hanya digunakan sebagai arsip tanpa dimanfaatkan untuk menghasilkan informasi yang dapat mendukung pengambilan keputusan bisnis.
+
+Untuk mengatasi permasalahan tersebut, dikembangkan sebuah sistem Point of Sale (POS) berbasis web bernama \textbf{Brew \& Bytes POS}. Sistem ini dirancang untuk membantu proses transaksi penjualan, pengelolaan produk, manajemen stok, pengelolaan pengguna, serta penyusunan laporan penjualan secara terintegrasi.
+
+Selain menyediakan fungsi kasir, sistem ini juga dilengkapi dengan fitur pembayaran digital menggunakan QRIS melalui integrasi Payment Gateway Midtrans. Sistem juga menerapkan metode FIFO (First In First Out) dalam pengelolaan stok agar pergerakan persediaan dapat tercatat dengan lebih baik.
+
+Sebagai nilai tambah, sistem ini mengimplementasikan algoritma Apriori untuk melakukan analisis pola pembelian pelanggan (Market Basket Analysis). Hasil analisis tersebut dapat digunakan untuk mengetahui produk yang sering dibeli secara bersamaan sehingga dapat membantu pemilik usaha dalam menyusun strategi promosi dan paket bundling produk.
+
+Berdasarkan kebutuhan tersebut, dibuatlah proyek \textbf{Brew \& Bytes POS}, yaitu sistem Point of Sale berbasis web yang terintegrasi dengan fitur manajemen inventori, pembayaran digital, dan analisis pola pembelian pelanggan.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1.2 Tujuan Proyek}\label{tujuan-proyek}
+
+Tujuan dari pengembangan proyek ini adalah sebagai berikut:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Membangun sistem Point of Sale berbasis web untuk membantu proses transaksi penjualan.
+\item
+  Mempermudah pengelolaan data produk dan kategori.
+\item
+  Mengelola stok barang secara terintegrasi menggunakan metode FIFO.
+\item
+  Menyediakan laporan penjualan yang dapat diakses secara mudah.
+\item
+  Mengintegrasikan pembayaran digital menggunakan QRIS.
+\item
+  Menerapkan algoritma Apriori untuk menganalisis pola pembelian pelanggan.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1.3 Ruang Lingkup Proyek}\label{ruang-lingkup-proyek}
+
+Ruang lingkup proyek yang dikembangkan meliputi:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Sistem berbasis web yang dapat diakses melalui browser.
+\item
+  Manajemen pengguna dengan hak akses Admin, Manager, dan Cashier.
+\item
+  Manajemen produk dan kategori.
+\item
+  Transaksi penjualan melalui modul Point of Sale (POS).
+\item
+  Pembayaran menggunakan metode tunai dan QRIS.
+\item
+  Pengelolaan stok barang menggunakan metode FIFO.
+\item
+  Laporan penjualan dan statistik bisnis.
+\item
+  Analisis pola pembelian pelanggan menggunakan algoritma Apriori.
+\item
+  Dukungan mode offline untuk transaksi tertentu.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1.4 Manfaat Proyek}\label{manfaat-proyek}
+
+\subsubsection{Bagi Pengguna}\label{bagi-pengguna}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Mempermudah proses transaksi penjualan.
+\item
+  Mengurangi kesalahan pencatatan transaksi.
+\item
+  Mempermudah pengelolaan stok dan produk.
+\item
+  Mempercepat proses penyusunan laporan.
+\end{enumerate}
+
+\subsubsection{Bagi Pemilik Usaha}\label{bagi-pemilik-usaha}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Memperoleh informasi penjualan secara real-time.
+\item
+  Memantau kondisi stok dengan lebih mudah.
+\item
+  Memanfaatkan analisis pola pembelian pelanggan untuk strategi pemasaran.
+\item
+  Mendukung pengambilan keputusan berdasarkan data transaksi.
+\end{enumerate}
+
+\subsubsection{Bagi Pengembang}\label{bagi-pengembang}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Menerapkan teknologi web modern dalam pengembangan aplikasi.
+\item
+  Mengimplementasikan integrasi payment gateway.
+\item
+  Mengimplementasikan algoritma Apriori pada studi kasus nyata.
+\item
+  Menambah pengalaman dalam pengembangan sistem informasi berbasis web.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{1.5 Gambaran Umum Sistem}\label{gambaran-umum-sistem}
+
+Brew \& Bytes POS merupakan aplikasi Point of Sale berbasis web yang dibangun menggunakan Laravel, React, dan MySQL. Sistem ini dirancang untuk membantu operasional kafe atau restoran melalui pengelolaan transaksi, inventori, pembayaran digital, serta analisis data penjualan.
+
+Fitur utama yang tersedia dalam sistem antara lain:
+
+\begin{itemize}
+\tightlist
+\item
+  Login dan manajemen pengguna
+\item
+  Dashboard bisnis
+\item
+  Point of Sale (POS)
+\item
+  Manajemen produk
+\item
+  Manajemen kategori
+\item
+  Pembayaran QRIS
+\item
+  Laporan penjualan
+\item
+  Market Basket Analysis
+\item
+  Sinkronisasi offline
+\end{itemize}
+
+Dengan adanya sistem ini diharapkan proses operasional bisnis dapat berjalan lebih efektif, efisien, dan terintegrasi dalam satu platform.
+
+\section{BAB II}\label{bab-ii}
+
+\section{GAMBARAN UMUM DAN PERANCANGAN SISTEM}\label{gambaran-umum-dan-perancangan-sistem}
+
+\subsection{2.1 Gambaran Umum Sistem}\label{gambaran-umum-sistem-1}
+
+Brew \& Bytes POS merupakan sistem Point of Sale (POS) berbasis web yang dirancang untuk membantu operasional usaha kafe dan restoran. Sistem ini menyediakan berbagai fitur yang mendukung proses bisnis mulai dari pengelolaan produk, transaksi penjualan, pembayaran digital, pengelolaan stok, hingga analisis pola pembelian pelanggan.
+
+Sistem dibangun menggunakan framework Laravel sebagai backend, React sebagai frontend, serta MySQL sebagai basis data. Selain itu, sistem terintegrasi dengan layanan Midtrans untuk mendukung pembayaran QRIS dan menerapkan algoritma Apriori untuk menghasilkan analisis Market Basket Analysis.
+
+Tujuan utama sistem adalah meningkatkan efisiensi operasional bisnis serta membantu pengambilan keputusan berdasarkan data transaksi yang tersimpan.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{2.2 Arsitektur Sistem}\label{arsitektur-sistem}
+
+Brew \& Bytes POS menggunakan arsitektur client-server.
+
+Pada arsitektur ini, pengguna mengakses aplikasi melalui browser yang berkomunikasi dengan server aplikasi. Server bertanggung jawab untuk memproses data, menjalankan logika bisnis, berinteraksi dengan database, serta mengelola integrasi dengan layanan pihak ketiga.
+
+\subsubsection{Diagram Arsitektur Sistem}\label{diagram-arsitektur-sistem}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{+{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}+}
+\NormalTok{|      User        |}
+\NormalTok{+{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}+}
+\NormalTok{         │}
+\NormalTok{         ▼}
+\NormalTok{+{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}+}
+\NormalTok{| React + Inertia  |}
+\NormalTok{|    Frontend      |}
+\NormalTok{+{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}+}
+\NormalTok{         │}
+\NormalTok{         ▼}
+\NormalTok{+{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}+}
+\NormalTok{| Laravel Backend  |}
+\NormalTok{+{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}+}
+\NormalTok{         │}
+\NormalTok{ ┌───────┼─────────┐}
+\NormalTok{ ▼       ▼         ▼}
+\NormalTok{MySQL  Midtrans  Analytics}
+\NormalTok{Database Payment  Apriori}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{Penjelasan Arsitektur}\label{penjelasan-arsitektur}
+
+\begin{itemize}
+\tightlist
+\item
+  React digunakan untuk membangun antarmuka pengguna.
+\item
+  Inertia.js digunakan sebagai penghubung antara frontend dan backend.
+\item
+  Laravel menangani logika bisnis aplikasi.
+\item
+  MySQL digunakan untuk menyimpan seluruh data sistem.
+\item
+  Midtrans digunakan untuk memproses pembayaran QRIS.
+\item
+  Algoritma Apriori digunakan untuk menganalisis pola pembelian pelanggan.
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{2.3 Hak Akses Pengguna}\label{hak-akses-pengguna}
+
+Sistem menerapkan Role-Based Access Control (RBAC) untuk membatasi akses pengguna sesuai perannya.
+
+\subsubsection{Admin}\label{admin}
+
+Admin memiliki hak akses penuh terhadap seluruh fitur sistem.
+
+Hak akses:
+
+\begin{itemize}
+\tightlist
+\item
+  Dashboard
+\item
+  POS
+\item
+  Produk
+\item
+  Kategori
+\item
+  Pengguna
+\item
+  Laporan
+\item
+  Analytics
+\end{itemize}
+
+\subsubsection{Manager}\label{manager}
+
+Manager memiliki akses untuk memantau operasional dan mengelola data produk.
+
+Hak akses:
+
+\begin{itemize}
+\tightlist
+\item
+  Dashboard
+\item
+  POS
+\item
+  Produk
+\item
+  Kategori
+\item
+  Laporan
+\item
+  Analytics
+\end{itemize}
+
+\subsubsection{Cashier}\label{cashier}
+
+Cashier bertugas melakukan transaksi penjualan.
+
+Hak akses:
+
+\begin{itemize}
+\tightlist
+\item
+  Dashboard
+\item
+  POS
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{2.4 Fitur Sistem}\label{fitur-sistem}
+
+\subsubsection{2.4.1 Dashboard}\label{dashboard}
+
+Dashboard berfungsi sebagai pusat informasi bisnis yang menampilkan ringkasan data penting.
+
+Informasi yang ditampilkan meliputi:
+
+\begin{itemize}
+\tightlist
+\item
+  Pendapatan hari ini
+\item
+  Jumlah transaksi
+\item
+  Jumlah produk
+\item
+  Stok menipis
+\item
+  Transaksi terbaru
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{2.4.2 Point of Sale (POS)}\label{point-of-sale-pos}
+
+Modul POS digunakan oleh kasir untuk melakukan transaksi penjualan.
+
+Fitur utama:
+
+\begin{itemize}
+\tightlist
+\item
+  Pencarian produk
+\item
+  Keranjang belanja
+\item
+  Diskon
+\item
+  Pajak
+\item
+  Checkout transaksi
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{2.4.3 Pembayaran QRIS}\label{pembayaran-qris}
+
+Sistem mendukung pembayaran QRIS melalui integrasi dengan Midtrans.
+
+Alur pembayaran:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Kasir memilih QRIS.
+\item
+  Sistem menghasilkan QR Code.
+\item
+  Pelanggan melakukan pembayaran.
+\item
+  Sistem memverifikasi pembayaran.
+\item
+  Transaksi dinyatakan berhasil.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{2.4.4 Manajemen Produk}\label{manajemen-produk}
+
+Modul produk digunakan untuk mengelola data barang yang dijual.
+
+Fitur:
+
+\begin{itemize}
+\tightlist
+\item
+  Tambah produk
+\item
+  Edit produk
+\item
+  Hapus produk
+\item
+  Upload gambar
+\item
+  Pengelolaan stok
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{2.4.5 Manajemen Kategori}\label{manajemen-kategori}
+
+Kategori digunakan untuk mengelompokkan produk agar lebih mudah dikelola.
+
+Fitur:
+
+\begin{itemize}
+\tightlist
+\item
+  Tambah kategori
+\item
+  Edit kategori
+\item
+  Hapus kategori
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{2.4.6 Manajemen Pengguna}\label{manajemen-pengguna}
+
+Modul pengguna digunakan untuk mengelola akun yang dapat mengakses sistem.
+
+Fitur:
+
+\begin{itemize}
+\tightlist
+\item
+  Tambah pengguna
+\item
+  Edit pengguna
+\item
+  Hapus pengguna
+\item
+  Pengaturan role
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{2.4.7 Laporan Penjualan}\label{laporan-penjualan}
+
+Modul laporan digunakan untuk memantau performa bisnis.
+
+Informasi yang tersedia:
+
+\begin{itemize}
+\tightlist
+\item
+  Total penjualan
+\item
+  Total transaksi
+\item
+  Produk terlaris
+\item
+  Grafik penjualan
+\item
+  Export CSV
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{2.4.8 Market Basket Analysis}\label{market-basket-analysis}
+
+Modul analytics menggunakan algoritma Apriori untuk menemukan hubungan antar produk yang sering dibeli secara bersamaan.
+
+Output yang dihasilkan:
+
+\begin{itemize}
+\tightlist
+\item
+  Association Rules
+\item
+  Support
+\item
+  Confidence
+\item
+  Lift
+\end{itemize}
+
+Informasi tersebut dapat digunakan untuk strategi promosi dan bundling produk.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{2.5 Perancangan Database}\label{perancangan-database}
+
+Database yang digunakan dalam sistem adalah MySQL.
+
+\subsubsection{Tabel Users}\label{tabel-users}
+
+Menyimpan data pengguna sistem.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Field & Tipe \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+id & bigint \\
+name & varchar \\
+email & varchar \\
+password & varchar \\
+role & varchar \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{Tabel Categories}\label{tabel-categories}
+
+Menyimpan data kategori produk.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Field & Tipe \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+id & bigint \\
+name & varchar \\
+description & text \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{Tabel Products}\label{tabel-products}
+
+Menyimpan data produk.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Field & Tipe \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+id & bigint \\
+category\_id & bigint \\
+name & varchar \\
+price & decimal \\
+stock & integer \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{Tabel Orders}\label{tabel-orders}
+
+Menyimpan transaksi penjualan.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Field & Tipe \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+id & bigint \\
+user\_id & bigint \\
+total\_price & decimal \\
+payment\_method & varchar \\
+payment\_status & varchar \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{Tabel Order Items}\label{tabel-order-items}
+
+Menyimpan detail item transaksi.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Field & Tipe \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+id & bigint \\
+order\_id & bigint \\
+product\_id & bigint \\
+quantity & integer \\
+price & decimal \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{Tabel Inventory Batches}\label{tabel-inventory-batches}
+
+Menyimpan data batch stok untuk implementasi FIFO.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Field & Tipe \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+id & bigint \\
+product\_id & bigint \\
+initial\_quantity & integer \\
+remaining\_quantity & integer \\
+buy\_price & decimal \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{2.6 Entity Relationship Diagram (ERD)}\label{entity-relationship-diagram-erd}
+
+Hubungan antar tabel dalam sistem dapat digambarkan sebagai berikut:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Users}
+\NormalTok{  │}
+\NormalTok{  └──── Orders}
+\NormalTok{           │}
+\NormalTok{           └──── Order Items}
+\NormalTok{                     │}
+\NormalTok{                     └──── Products}
+\NormalTok{                               │}
+\NormalTok{                               └──── Categories}
+
+\NormalTok{Products}
+\NormalTok{   │}
+\NormalTok{   └──── Inventory Batches}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Tambahkan gambar ERD hasil draw.io atau StarUML pada bagian ini.}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{2.7 Use Case Diagram}\label{use-case-diagram}
+
+Sistem melibatkan tiga aktor utama yaitu Admin, Manager, dan Cashier.
+
+\subsubsection{Use Case Admin}\label{use-case-admin}
+
+\begin{itemize}
+\tightlist
+\item
+  Login
+\item
+  Kelola Produk
+\item
+  Kelola Kategori
+\item
+  Kelola Pengguna
+\item
+  Lihat Laporan
+\item
+  Lihat Analytics
+\end{itemize}
+
+\subsubsection{Use Case Manager}\label{use-case-manager}
+
+\begin{itemize}
+\tightlist
+\item
+  Login
+\item
+  Kelola Produk
+\item
+  Kelola Kategori
+\item
+  Lihat Laporan
+\item
+  Lihat Analytics
+\end{itemize}
+
+\subsubsection{Use Case Cashier}\label{use-case-cashier}
+
+\begin{itemize}
+\tightlist
+\item
+  Login
+\item
+  Melakukan Transaksi
+\item
+  Pembayaran Tunai
+\item
+  Pembayaran QRIS
+\end{itemize}
+
+\textbf{Tambahkan gambar Use Case Diagram pada bagian ini.}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{2.8 Ringkasan Perancangan Sistem}\label{ringkasan-perancangan-sistem}
+
+Berdasarkan hasil perancangan yang telah dilakukan, sistem Brew \& Bytes POS dirancang sebagai aplikasi Point of Sale modern yang mampu mengelola transaksi penjualan, inventori, pembayaran digital, serta analisis pola pembelian pelanggan dalam satu platform terintegrasi.
+
+Perancangan ini menjadi dasar dalam proses implementasi sistem yang akan dibahas pada bab berikutnya.
+
+\section{BAB III}\label{bab-iii}
+
+\section{IMPLEMENTASI SISTEM}\label{implementasi-sistem}
+
+\subsection{3.1 Implementasi Sistem}\label{implementasi-sistem-1}
+
+Tahap implementasi merupakan proses penerapan hasil perancangan sistem ke dalam bentuk aplikasi yang dapat digunakan oleh pengguna. Sistem Brew \& Bytes POS dikembangkan menggunakan Laravel sebagai backend, React sebagai frontend, MySQL sebagai basis data, serta Midtrans sebagai layanan pembayaran QRIS.
+
+Implementasi dilakukan berdasarkan kebutuhan fungsional yang telah dirancang pada bab sebelumnya.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3.2 Lingkungan Implementasi}\label{lingkungan-implementasi}
+
+\subsubsection{3.2.1 Perangkat Keras}\label{perangkat-keras}
+
+Perangkat keras yang digunakan selama proses pengembangan sistem adalah sebagai berikut:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Komponen & Spesifikasi \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Processor & Intel Core i5 atau setara \\
+RAM & 8 GB \\
+Penyimpanan & SSD 256 GB \\
+Sistem Operasi & Windows 11 \\
+\end{longtable}
+}
+
+\subsubsection{3.2.2 Perangkat Lunak}\label{perangkat-lunak}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Software & Versi \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+PHP & 8.2 \\
+Laravel & 12 \\
+React & 19 \\
+MySQL & 8 \\
+Node.js & Terbaru \\
+Visual Studio Code & Terbaru \\
+Google Chrome & Terbaru \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{3.3 Implementasi Antarmuka Sistem}\label{implementasi-antarmuka-sistem}
+
+\subsection{3.3.1 Halaman Login}\label{halaman-login}
+
+Halaman login digunakan sebagai gerbang autentikasi pengguna sebelum dapat mengakses sistem.
+
+Fitur yang tersedia pada halaman login meliputi:
+
+\begin{itemize}
+\tightlist
+\item
+  Input email
+\item
+  Input password
+\item
+  Validasi login
+\item
+  Hak akses berdasarkan role pengguna
+\end{itemize}
+
+\subsubsection{Tampilan Halaman Login}\label{tampilan-halaman-login}
+
+\textbf{Gambar 3.1 Halaman Login}
+
+\emph{(Tambahkan screenshot halaman login di sini)}
+
+\subsubsection{Hasil Implementasi}\label{hasil-implementasi}
+
+Sistem berhasil melakukan autentikasi pengguna berdasarkan data yang tersimpan pada database dan mengarahkan pengguna ke dashboard sesuai hak akses yang dimiliki.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3.3.2 Dashboard}\label{dashboard-1}
+
+Dashboard merupakan halaman utama yang menampilkan ringkasan kondisi bisnis secara real-time.
+
+Informasi yang ditampilkan meliputi:
+
+\begin{itemize}
+\tightlist
+\item
+  Total pendapatan hari ini
+\item
+  Total transaksi
+\item
+  Jumlah produk
+\item
+  Stok menipis
+\item
+  Transaksi terbaru
+\end{itemize}
+
+\subsubsection{Tampilan Dashboard}\label{tampilan-dashboard}
+
+\textbf{Gambar 3.2 Dashboard}
+
+\emph{(Tambahkan screenshot dashboard di sini)}
+
+\subsubsection{Hasil Implementasi}\label{hasil-implementasi-1}
+
+Dashboard berhasil menyajikan informasi penting yang dibutuhkan pengguna untuk memantau kondisi operasional bisnis.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3.3.3 Point of Sale (POS)}\label{point-of-sale-pos-1}
+
+Modul Point of Sale digunakan untuk melakukan transaksi penjualan.
+
+Fitur utama:
+
+\begin{itemize}
+\tightlist
+\item
+  Katalog produk
+\item
+  Pencarian produk
+\item
+  Keranjang belanja
+\item
+  Diskon
+\item
+  Pajak
+\item
+  Checkout transaksi
+\end{itemize}
+
+\subsubsection{Tampilan POS}\label{tampilan-pos}
+
+\textbf{Gambar 3.3 Halaman POS}
+
+\emph{(Tambahkan screenshot POS di sini)}
+
+\subsubsection{Hasil Implementasi}\label{hasil-implementasi-2}
+
+Kasir dapat melakukan transaksi penjualan secara cepat dan efisien melalui antarmuka yang sederhana dan mudah digunakan.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3.3.4 Keranjang Belanja}\label{keranjang-belanja}
+
+Keranjang belanja digunakan untuk menampilkan daftar produk yang dipilih pelanggan sebelum transaksi diselesaikan.
+
+Informasi yang ditampilkan:
+
+\begin{itemize}
+\tightlist
+\item
+  Nama produk
+\item
+  Harga produk
+\item
+  Jumlah produk
+\item
+  Subtotal
+\item
+  Diskon
+\item
+  Pajak
+\item
+  Total pembayaran
+\end{itemize}
+
+\subsubsection{Tampilan Keranjang}\label{tampilan-keranjang}
+
+\textbf{Gambar 3.4 Keranjang Belanja}
+
+\emph{(Tambahkan screenshot keranjang belanja di sini)}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3.3.5 Pembayaran QRIS}\label{pembayaran-qris-1}
+
+Sistem mendukung pembayaran digital menggunakan QRIS melalui integrasi dengan Midtrans.
+
+Alur pembayaran:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Kasir memilih metode pembayaran QRIS.
+\item
+  Sistem menghasilkan QR Code.
+\item
+  Pelanggan melakukan pembayaran.
+\item
+  Sistem melakukan verifikasi transaksi.
+\item
+  Status transaksi berubah menjadi berhasil.
+\end{enumerate}
+
+\subsubsection{Tampilan QRIS}\label{tampilan-qris}
+
+\textbf{Gambar 3.5 Pembayaran QRIS}
+
+\emph{(Tambahkan screenshot QRIS di sini)}
+
+\subsubsection{Hasil Implementasi}\label{hasil-implementasi-3}
+
+Sistem berhasil menghasilkan QR Code pembayaran dan menerima konfirmasi pembayaran secara otomatis.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3.3.6 Manajemen Produk}\label{manajemen-produk-1}
+
+Halaman produk digunakan untuk mengelola data produk yang dijual.
+
+Fitur:
+
+\begin{itemize}
+\tightlist
+\item
+  Tambah produk
+\item
+  Edit produk
+\item
+  Hapus produk
+\item
+  Upload gambar produk
+\item
+  Pengelolaan stok
+\end{itemize}
+
+\subsubsection{Tampilan Produk}\label{tampilan-produk}
+
+\textbf{Gambar 3.6 Manajemen Produk}
+
+\emph{(Tambahkan screenshot halaman produk di sini)}
+
+\subsubsection{Hasil Implementasi}\label{hasil-implementasi-4}
+
+Data produk dapat dikelola secara terpusat dan langsung digunakan pada proses transaksi.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3.3.7 Manajemen Kategori}\label{manajemen-kategori-1}
+
+Halaman kategori digunakan untuk mengelompokkan produk berdasarkan jenisnya.
+
+Fitur:
+
+\begin{itemize}
+\tightlist
+\item
+  Tambah kategori
+\item
+  Edit kategori
+\item
+  Hapus kategori
+\end{itemize}
+
+\subsubsection{Tampilan Kategori}\label{tampilan-kategori}
+
+\textbf{Gambar 3.7 Manajemen Kategori}
+
+\emph{(Tambahkan screenshot kategori di sini)}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3.3.8 Manajemen Pengguna}\label{manajemen-pengguna-1}
+
+Modul pengguna digunakan untuk mengelola akun yang dapat mengakses sistem.
+
+Hak akses yang tersedia:
+
+\begin{itemize}
+\tightlist
+\item
+  Admin
+\item
+  Manager
+\item
+  Cashier
+\end{itemize}
+
+\subsubsection{Tampilan Manajemen Pengguna}\label{tampilan-manajemen-pengguna}
+
+\textbf{Gambar 3.8 Manajemen Pengguna}
+
+\emph{(Tambahkan screenshot user management di sini)}
+
+\subsubsection{Hasil Implementasi}\label{hasil-implementasi-5}
+
+Admin dapat mengelola akun pengguna dan menentukan hak akses sesuai kebutuhan operasional.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3.3.9 Laporan Penjualan}\label{laporan-penjualan-1}
+
+Halaman laporan digunakan untuk memantau performa bisnis berdasarkan data transaksi.
+
+Informasi yang tersedia:
+
+\begin{itemize}
+\tightlist
+\item
+  Total penjualan
+\item
+  Total transaksi
+\item
+  Produk terlaris
+\item
+  Grafik penjualan
+\end{itemize}
+
+\subsubsection{Tampilan Laporan}\label{tampilan-laporan}
+
+\textbf{Gambar 3.9 Laporan Penjualan}
+
+\emph{(Tambahkan screenshot laporan di sini)}
+
+\subsubsection{Hasil Implementasi}\label{hasil-implementasi-6}
+
+Laporan berhasil menampilkan informasi penjualan secara visual sehingga memudahkan proses analisis bisnis.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{3.3.10 Analytics Apriori}\label{analytics-apriori}
+
+Halaman Analytics digunakan untuk menampilkan hasil analisis pola pembelian pelanggan menggunakan algoritma Apriori.
+
+Informasi yang ditampilkan:
+
+\begin{itemize}
+\tightlist
+\item
+  Association Rules
+\item
+  Support
+\item
+  Confidence
+\item
+  Lift
+\end{itemize}
+
+\subsubsection{Tampilan Analytics}\label{tampilan-analytics}
+
+\textbf{Gambar 3.10 Analytics Apriori}
+
+\emph{(Tambahkan screenshot analytics di sini)}
+
+\subsubsection{Hasil Implementasi}\label{hasil-implementasi-7}
+
+Sistem berhasil menghasilkan aturan asosiasi berdasarkan data transaksi yang tersimpan.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{3.4 Implementasi FIFO}\label{implementasi-fifo}
+
+Sistem menerapkan metode FIFO (First In First Out) dalam pengelolaan stok.
+
+Metode FIFO memastikan stok yang pertama kali masuk akan menjadi stok yang pertama kali digunakan.
+
+\subsubsection{Contoh Implementasi}\label{contoh-implementasi}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Batch & Jumlah \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Batch 1 & 50 \\
+Batch 2 & 50 \\
+\end{longtable}
+}
+
+Jika terjadi penjualan sebanyak 60 unit maka:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Batch & Sisa \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Batch 1 & 0 \\
+Batch 2 & 40 \\
+\end{longtable}
+}
+
+\subsubsection{Hasil Implementasi}\label{hasil-implementasi-8}
+
+Metode FIFO berhasil diterapkan untuk menjaga akurasi pengelolaan persediaan.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{3.5 Implementasi Market Basket Analysis}\label{implementasi-market-basket-analysis}
+
+Market Basket Analysis diterapkan menggunakan algoritma Apriori.
+
+Tujuannya adalah menemukan hubungan antar produk yang sering dibeli secara bersamaan.
+
+\subsubsection{Contoh Data Transaksi}\label{contoh-data-transaksi}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Transaksi & Produk \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+T1 & Espresso, Croissant \\
+T2 & Espresso, Brownies \\
+T3 & Espresso, Croissant \\
+T4 & Latte, Brownies \\
+T5 & Espresso, Croissant \\
+\end{longtable}
+}
+
+\subsubsection{Contoh Hasil Analisis}\label{contoh-hasil-analisis}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Rule & Support & Confidence \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Espresso → Croissant & 60\% & 75\% \\
+Croissant → Espresso & 60\% & 100\% \\
+\end{longtable}
+}
+
+\subsubsection{Hasil Implementasi}\label{hasil-implementasi-9}
+
+Hasil analisis dapat digunakan sebagai dasar dalam penyusunan strategi promosi dan paket bundling produk.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{3.6 Ringkasan Implementasi}\label{ringkasan-implementasi}
+
+Berdasarkan hasil implementasi yang telah dilakukan, seluruh modul utama sistem berhasil dibangun dan dapat berjalan sesuai kebutuhan yang telah ditentukan.
+
+Modul yang berhasil diimplementasikan meliputi:
+
+\begin{itemize}
+\tightlist
+\item
+  Login dan Manajemen Pengguna
+\item
+  Dashboard
+\item
+  Point of Sale (POS)
+\item
+  Manajemen Produk
+\item
+  Manajemen Kategori
+\item
+  Pembayaran QRIS
+\item
+  Laporan Penjualan
+\item
+  FIFO Inventory
+\item
+  Analytics Apriori
+\item
+  Sinkronisasi Offline
+\end{itemize}
+
+Dengan demikian sistem Brew \& Bytes POS telah berhasil dikembangkan sebagai aplikasi Point of Sale berbasis web yang mampu mendukung operasional bisnis secara terintegrasi.
+
+\section{BAB IV}\label{bab-iv}
+
+\section{PENGUJIAN DAN KESIMPULAN}\label{pengujian-dan-kesimpulan}
+
+\subsection{4.1 Pengujian Sistem}\label{pengujian-sistem}
+
+Pengujian sistem dilakukan untuk memastikan seluruh fitur yang terdapat pada Brew \& Bytes POS dapat berjalan sesuai dengan kebutuhan yang telah dirancang. Metode pengujian yang digunakan adalah \textbf{Black Box Testing}, yaitu metode pengujian yang berfokus pada fungsi sistem tanpa melihat implementasi kode program.
+
+Tujuan pengujian adalah untuk memastikan bahwa setiap fitur dapat menerima input, memproses data, dan menghasilkan output yang sesuai dengan kebutuhan pengguna.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4.2 Pengujian Fitur Login}\label{pengujian-fitur-login}
+
+Pengujian dilakukan untuk memastikan sistem autentikasi berjalan dengan baik.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0270}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3649}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1081}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+No
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Skenario Pengujian
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Hasil Yang Diharapkan
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Hasil
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & Login dengan email dan password valid & Berhasil masuk ke dashboard & Berhasil \\
+2 & Login dengan password salah & Menampilkan pesan error & Berhasil \\
+3 & Login dengan email kosong & Menampilkan validasi & Berhasil \\
+4 & Login dengan password kosong & Menampilkan validasi & Berhasil \\
+\end{longtable}
+}
+
+\subsubsection{Hasil Pengujian}\label{hasil-pengujian}
+
+Berdasarkan pengujian yang dilakukan, fitur login berhasil berjalan sesuai dengan kebutuhan sistem.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4.3 Pengujian Manajemen Produk}\label{pengujian-manajemen-produk}
+
+Pengujian dilakukan pada fitur pengelolaan produk.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+No & Skenario Pengujian & Hasil Yang Diharapkan & Hasil \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & Menambah produk baru & Produk tersimpan & Berhasil \\
+2 & Mengubah data produk & Data diperbarui & Berhasil \\
+3 & Menghapus produk & Produk terhapus & Berhasil \\
+4 & Upload gambar produk & Gambar tersimpan & Berhasil \\
+\end{longtable}
+}
+
+\subsubsection{Hasil Pengujian}\label{hasil-pengujian-1}
+
+Seluruh fitur manajemen produk berhasil berjalan dengan baik.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4.4 Pengujian Manajemen Kategori}\label{pengujian-manajemen-kategori}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+No & Skenario Pengujian & Hasil Yang Diharapkan & Hasil \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & Menambah kategori & Data tersimpan & Berhasil \\
+2 & Mengubah kategori & Data diperbarui & Berhasil \\
+3 & Menghapus kategori & Data terhapus & Berhasil \\
+\end{longtable}
+}
+
+\subsubsection{Hasil Pengujian}\label{hasil-pengujian-2}
+
+Fitur kategori berhasil dijalankan sesuai dengan kebutuhan.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4.5 Pengujian Transaksi Point of Sale}\label{pengujian-transaksi-point-of-sale}
+
+Pengujian dilakukan terhadap proses transaksi penjualan.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0317}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4921}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3492}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1270}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+No
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Skenario Pengujian
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Hasil Yang Diharapkan
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Hasil
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & Menambahkan produk ke keranjang & Produk masuk keranjang & Berhasil \\
+2 & Mengubah jumlah produk & Total diperbarui & Berhasil \\
+3 & Menghapus produk dari keranjang & Produk terhapus & Berhasil \\
+4 & Checkout transaksi & Transaksi tersimpan & Berhasil \\
+\end{longtable}
+}
+
+\subsubsection{Hasil Pengujian}\label{hasil-pengujian-3}
+
+Modul Point of Sale berhasil memproses transaksi penjualan dengan baik.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4.6 Pengujian Pembayaran QRIS}\label{pengujian-pembayaran-qris}
+
+Pengujian dilakukan pada integrasi Payment Gateway Midtrans.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0278}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3056}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5556}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1111}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+No
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Skenario Pengujian
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Hasil Yang Diharapkan
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Hasil
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & Generate QRIS & QR Code berhasil dibuat & Berhasil \\
+2 & Pembayaran berhasil & Status transaksi menjadi Paid & Berhasil \\
+3 & Pembayaran dibatalkan & Status transaksi menjadi Failed & Berhasil \\
+4 & Pembayaran kedaluwarsa & Status transaksi berubah menjadi Expired & Berhasil \\
+\end{longtable}
+}
+
+\subsubsection{Hasil Pengujian}\label{hasil-pengujian-4}
+
+Integrasi QRIS berhasil berjalan sesuai dengan alur pembayaran yang dirancang.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4.7 Pengujian FIFO}\label{pengujian-fifo}
+
+Pengujian dilakukan untuk memastikan sistem mengurangi stok berdasarkan urutan batch yang masuk terlebih dahulu.
+
+\subsubsection{Data Awal}\label{data-awal}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Batch & Jumlah \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Batch 1 & 50 \\
+Batch 2 & 50 \\
+\end{longtable}
+}
+
+Total stok: 100 unit
+
+\subsubsection{Simulasi Penjualan}\label{simulasi-penjualan}
+
+Penjualan sebanyak 60 unit.
+
+\subsubsection{Hasil}\label{hasil}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Batch & Sisa \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Batch 1 & 0 \\
+Batch 2 & 40 \\
+\end{longtable}
+}
+
+\subsubsection{Analisis}\label{analisis}
+
+Hasil menunjukkan bahwa sistem berhasil menerapkan metode FIFO dengan benar. Batch pertama digunakan terlebih dahulu sebelum mengambil stok dari batch berikutnya.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4.8 Pengujian Analytics Apriori}\label{pengujian-analytics-apriori}
+
+Pengujian dilakukan untuk memastikan sistem dapat menghasilkan aturan asosiasi berdasarkan data transaksi.
+
+\subsubsection{Data Sampel}\label{data-sampel}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Transaksi & Produk \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+T1 & Espresso, Croissant \\
+T2 & Espresso, Brownies \\
+T3 & Espresso, Croissant \\
+T4 & Latte, Brownies \\
+T5 & Espresso, Croissant \\
+\end{longtable}
+}
+
+\subsubsection{Hasil Analisis}\label{hasil-analisis}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Rule & Support & Confidence \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Espresso → Croissant & 60\% & 75\% \\
+Croissant → Espresso & 60\% & 100\% \\
+\end{longtable}
+}
+
+\subsubsection{Analisis}\label{analisis-1}
+
+Berdasarkan hasil pengujian, algoritma Apriori berhasil menemukan hubungan antar produk yang sering dibeli secara bersamaan.
+
+Informasi tersebut dapat digunakan untuk:
+
+\begin{itemize}
+\tightlist
+\item
+  Strategi bundling produk
+\item
+  Cross-selling
+\item
+  Penempatan produk
+\item
+  Program promosi
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4.9 Pengujian Mode Offline}\label{pengujian-mode-offline}
+
+Pengujian dilakukan untuk memastikan sistem tetap dapat digunakan ketika koneksi internet terputus.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0312}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3750}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4688}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1250}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+No
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Skenario Pengujian
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Hasil Yang Diharapkan
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Hasil
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & Internet terputus & Sistem tetap berjalan & Berhasil \\
+2 & Simpan transaksi offline & Data tersimpan lokal & Berhasil \\
+3 & Internet kembali aktif & Sinkronisasi otomatis berjalan & Berhasil \\
+\end{longtable}
+}
+
+\subsubsection{Hasil Pengujian}\label{hasil-pengujian-5}
+
+Fitur offline berhasil berjalan sesuai perancangan dan mampu menyimpan transaksi sementara sebelum dilakukan sinkronisasi ke server.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4.10 Ringkasan Hasil Pengujian}\label{ringkasan-hasil-pengujian}
+
+Berdasarkan seluruh pengujian yang telah dilakukan, seluruh fitur utama sistem berhasil berjalan sesuai kebutuhan.
+
+Ringkasan hasil pengujian dapat dilihat pada tabel berikut.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Modul & Status \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Login & Berhasil \\
+Dashboard & Berhasil \\
+POS & Berhasil \\
+Produk & Berhasil \\
+Kategori & Berhasil \\
+Pengguna & Berhasil \\
+QRIS & Berhasil \\
+FIFO & Berhasil \\
+Analytics Apriori & Berhasil \\
+Offline Sync & Berhasil \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4.11 Kesimpulan}\label{kesimpulan}
+
+Berdasarkan hasil pengembangan dan pengujian yang telah dilakukan, dapat disimpulkan bahwa proyek Brew \& Bytes POS berhasil dibangun sesuai dengan kebutuhan yang telah ditentukan.
+
+Sistem mampu mendukung proses transaksi penjualan, pengelolaan produk, pengelolaan stok, pembayaran digital melalui QRIS, penyusunan laporan penjualan, serta analisis pola pembelian pelanggan menggunakan algoritma Apriori.
+
+Penerapan metode FIFO berhasil membantu pengelolaan persediaan barang, sedangkan implementasi algoritma Apriori mampu menghasilkan informasi yang dapat digunakan untuk mendukung strategi pemasaran dan pengambilan keputusan bisnis.
+
+Secara keseluruhan, Brew \& Bytes POS berhasil menjadi solusi terintegrasi yang dapat membantu operasional kafe dan restoran secara lebih efektif, efisien, dan berbasis data.

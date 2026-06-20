@@ -1,0 +1,112 @@
+\babel@toc {bahasa}{}\relax 
+\contentsline {section}{\numberline {1}BAB I}{1}{section.1}%
+\contentsline {section}{\numberline {2}PENDAHULUAN}{1}{section.2}%
+\contentsline {subsection}{\numberline {2.1}1.1 Latar Belakang}{1}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}1.2 Tujuan Proyek}{2}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}1.3 Ruang Lingkup Proyek}{2}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}1.4 Manfaat Proyek}{3}{subsection.2.4}%
+\contentsline {subsubsection}{\numberline {2.4.1}Bagi Pengguna}{3}{subsubsection.2.4.1}%
+\contentsline {subsubsection}{\numberline {2.4.2}Bagi Pemilik Usaha}{3}{subsubsection.2.4.2}%
+\contentsline {subsubsection}{\numberline {2.4.3}Bagi Pengembang}{3}{subsubsection.2.4.3}%
+\contentsline {subsection}{\numberline {2.5}1.5 Gambaran Umum Sistem}{3}{subsection.2.5}%
+\contentsline {section}{\numberline {3}BAB II}{4}{section.3}%
+\contentsline {section}{\numberline {4}GAMBARAN UMUM DAN PERANCANGAN SISTEM}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}2.1 Gambaran Umum Sistem}{4}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}2.2 Arsitektur Sistem}{5}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}Diagram Arsitektur Sistem}{5}{subsubsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2}Penjelasan Arsitektur}{5}{subsubsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.3}2.3 Hak Akses Pengguna}{5}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}Admin}{5}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}Manager}{6}{subsubsection.4.3.2}%
+\contentsline {subsubsection}{\numberline {4.3.3}Cashier}{6}{subsubsection.4.3.3}%
+\contentsline {subsection}{\numberline {4.4}2.4 Fitur Sistem}{6}{subsection.4.4}%
+\contentsline {subsubsection}{\numberline {4.4.1}2.4.1 Dashboard}{6}{subsubsection.4.4.1}%
+\contentsline {subsubsection}{\numberline {4.4.2}2.4.2 Point of Sale (POS)}{7}{subsubsection.4.4.2}%
+\contentsline {subsubsection}{\numberline {4.4.3}2.4.3 Pembayaran QRIS}{7}{subsubsection.4.4.3}%
+\contentsline {subsubsection}{\numberline {4.4.4}2.4.4 Manajemen Produk}{8}{subsubsection.4.4.4}%
+\contentsline {subsubsection}{\numberline {4.4.5}2.4.5 Manajemen Kategori}{8}{subsubsection.4.4.5}%
+\contentsline {subsubsection}{\numberline {4.4.6}2.4.6 Manajemen Pengguna}{8}{subsubsection.4.4.6}%
+\contentsline {subsubsection}{\numberline {4.4.7}2.4.7 Laporan Penjualan}{9}{subsubsection.4.4.7}%
+\contentsline {subsubsection}{\numberline {4.4.8}2.4.8 Market Basket Analysis}{9}{subsubsection.4.4.8}%
+\contentsline {subsection}{\numberline {4.5}2.5 Perancangan Database}{9}{subsection.4.5}%
+\contentsline {subsubsection}{\numberline {4.5.1}Tabel Users}{9}{subsubsection.4.5.1}%
+\contentsline {subsubsection}{\numberline {4.5.2}Tabel Categories}{10}{subsubsection.4.5.2}%
+\contentsline {subsubsection}{\numberline {4.5.3}Tabel Products}{10}{subsubsection.4.5.3}%
+\contentsline {subsubsection}{\numberline {4.5.4}Tabel Orders}{10}{subsubsection.4.5.4}%
+\contentsline {subsubsection}{\numberline {4.5.5}Tabel Order Items}{11}{subsubsection.4.5.5}%
+\contentsline {subsubsection}{\numberline {4.5.6}Tabel Inventory Batches}{11}{subsubsection.4.5.6}%
+\contentsline {subsection}{\numberline {4.6}2.6 Entity Relationship Diagram (ERD)}{12}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.7}2.7 Use Case Diagram}{12}{subsection.4.7}%
+\contentsline {subsubsection}{\numberline {4.7.1}Use Case Admin}{12}{subsubsection.4.7.1}%
+\contentsline {subsubsection}{\numberline {4.7.2}Use Case Manager}{12}{subsubsection.4.7.2}%
+\contentsline {subsubsection}{\numberline {4.7.3}Use Case Cashier}{13}{subsubsection.4.7.3}%
+\contentsline {subsection}{\numberline {4.8}2.8 Ringkasan Perancangan Sistem}{13}{subsection.4.8}%
+\contentsline {section}{\numberline {5}BAB III}{13}{section.5}%
+\contentsline {section}{\numberline {6}IMPLEMENTASI SISTEM}{13}{section.6}%
+\contentsline {subsection}{\numberline {6.1}3.1 Implementasi Sistem}{13}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}3.2 Lingkungan Implementasi}{14}{subsection.6.2}%
+\contentsline {subsubsection}{\numberline {6.2.1}3.2.1 Perangkat Keras}{14}{subsubsection.6.2.1}%
+\contentsline {subsubsection}{\numberline {6.2.2}3.2.2 Perangkat Lunak}{14}{subsubsection.6.2.2}%
+\contentsline {section}{\numberline {7}3.3 Implementasi Antarmuka Sistem}{14}{section.7}%
+\contentsline {subsection}{\numberline {7.1}3.3.1 Halaman Login}{14}{subsection.7.1}%
+\contentsline {subsubsection}{\numberline {7.1.1}Tampilan Halaman Login}{15}{subsubsection.7.1.1}%
+\contentsline {subsubsection}{\numberline {7.1.2}Hasil Implementasi}{15}{subsubsection.7.1.2}%
+\contentsline {subsection}{\numberline {7.2}3.3.2 Dashboard}{15}{subsection.7.2}%
+\contentsline {subsubsection}{\numberline {7.2.1}Tampilan Dashboard}{15}{subsubsection.7.2.1}%
+\contentsline {subsubsection}{\numberline {7.2.2}Hasil Implementasi}{15}{subsubsection.7.2.2}%
+\contentsline {subsection}{\numberline {7.3}3.3.3 Point of Sale (POS)}{16}{subsection.7.3}%
+\contentsline {subsubsection}{\numberline {7.3.1}Tampilan POS}{16}{subsubsection.7.3.1}%
+\contentsline {subsubsection}{\numberline {7.3.2}Hasil Implementasi}{16}{subsubsection.7.3.2}%
+\contentsline {subsection}{\numberline {7.4}3.3.4 Keranjang Belanja}{16}{subsection.7.4}%
+\contentsline {subsubsection}{\numberline {7.4.1}Tampilan Keranjang}{17}{subsubsection.7.4.1}%
+\contentsline {subsection}{\numberline {7.5}3.3.5 Pembayaran QRIS}{17}{subsection.7.5}%
+\contentsline {subsubsection}{\numberline {7.5.1}Tampilan QRIS}{17}{subsubsection.7.5.1}%
+\contentsline {subsubsection}{\numberline {7.5.2}Hasil Implementasi}{17}{subsubsection.7.5.2}%
+\contentsline {subsection}{\numberline {7.6}3.3.6 Manajemen Produk}{17}{subsection.7.6}%
+\contentsline {subsubsection}{\numberline {7.6.1}Tampilan Produk}{18}{subsubsection.7.6.1}%
+\contentsline {subsubsection}{\numberline {7.6.2}Hasil Implementasi}{18}{subsubsection.7.6.2}%
+\contentsline {subsection}{\numberline {7.7}3.3.7 Manajemen Kategori}{18}{subsection.7.7}%
+\contentsline {subsubsection}{\numberline {7.7.1}Tampilan Kategori}{18}{subsubsection.7.7.1}%
+\contentsline {subsection}{\numberline {7.8}3.3.8 Manajemen Pengguna}{18}{subsection.7.8}%
+\contentsline {subsubsection}{\numberline {7.8.1}Tampilan Manajemen Pengguna}{19}{subsubsection.7.8.1}%
+\contentsline {subsubsection}{\numberline {7.8.2}Hasil Implementasi}{19}{subsubsection.7.8.2}%
+\contentsline {subsection}{\numberline {7.9}3.3.9 Laporan Penjualan}{19}{subsection.7.9}%
+\contentsline {subsubsection}{\numberline {7.9.1}Tampilan Laporan}{19}{subsubsection.7.9.1}%
+\contentsline {subsubsection}{\numberline {7.9.2}Hasil Implementasi}{19}{subsubsection.7.9.2}%
+\contentsline {subsection}{\numberline {7.10}3.3.10 Analytics Apriori}{20}{subsection.7.10}%
+\contentsline {subsubsection}{\numberline {7.10.1}Tampilan Analytics}{20}{subsubsection.7.10.1}%
+\contentsline {subsubsection}{\numberline {7.10.2}Hasil Implementasi}{20}{subsubsection.7.10.2}%
+\contentsline {section}{\numberline {8}3.4 Implementasi FIFO}{20}{section.8}%
+\contentsline {subsubsection}{\numberline {8.0.1}Contoh Implementasi}{20}{subsubsection.8.0.1}%
+\contentsline {subsubsection}{\numberline {8.0.2}Hasil Implementasi}{21}{subsubsection.8.0.2}%
+\contentsline {section}{\numberline {9}3.5 Implementasi Market Basket Analysis}{21}{section.9}%
+\contentsline {subsubsection}{\numberline {9.0.1}Contoh Data Transaksi}{21}{subsubsection.9.0.1}%
+\contentsline {subsubsection}{\numberline {9.0.2}Contoh Hasil Analisis}{21}{subsubsection.9.0.2}%
+\contentsline {subsubsection}{\numberline {9.0.3}Hasil Implementasi}{21}{subsubsection.9.0.3}%
+\contentsline {section}{\numberline {10}3.6 Ringkasan Implementasi}{22}{section.10}%
+\contentsline {section}{\numberline {11}BAB IV}{22}{section.11}%
+\contentsline {section}{\numberline {12}PENGUJIAN DAN KESIMPULAN}{22}{section.12}%
+\contentsline {subsection}{\numberline {12.1}4.1 Pengujian Sistem}{22}{subsection.12.1}%
+\contentsline {section}{\numberline {13}4.2 Pengujian Fitur Login}{23}{section.13}%
+\contentsline {subsubsection}{\numberline {13.0.1}Hasil Pengujian}{24}{subsubsection.13.0.1}%
+\contentsline {section}{\numberline {14}4.3 Pengujian Manajemen Produk}{25}{section.14}%
+\contentsline {subsubsection}{\numberline {14.0.1}Hasil Pengujian}{25}{subsubsection.14.0.1}%
+\contentsline {section}{\numberline {15}4.4 Pengujian Manajemen Kategori}{25}{section.15}%
+\contentsline {subsubsection}{\numberline {15.0.1}Hasil Pengujian}{25}{subsubsection.15.0.1}%
+\contentsline {section}{\numberline {16}4.5 Pengujian Transaksi Point of Sale}{25}{section.16}%
+\contentsline {subsubsection}{\numberline {16.0.1}Hasil Pengujian}{27}{subsubsection.16.0.1}%
+\contentsline {section}{\numberline {17}4.6 Pengujian Pembayaran QRIS}{27}{section.17}%
+\contentsline {subsubsection}{\numberline {17.0.1}Hasil Pengujian}{30}{subsubsection.17.0.1}%
+\contentsline {section}{\numberline {18}4.7 Pengujian FIFO}{30}{section.18}%
+\contentsline {subsubsection}{\numberline {18.0.1}Data Awal}{30}{subsubsection.18.0.1}%
+\contentsline {subsubsection}{\numberline {18.0.2}Simulasi Penjualan}{30}{subsubsection.18.0.2}%
+\contentsline {subsubsection}{\numberline {18.0.3}Hasil}{30}{subsubsection.18.0.3}%
+\contentsline {subsubsection}{\numberline {18.0.4}Analisis}{30}{subsubsection.18.0.4}%
+\contentsline {section}{\numberline {19}4.8 Pengujian Analytics Apriori}{31}{section.19}%
+\contentsline {subsubsection}{\numberline {19.0.1}Data Sampel}{31}{subsubsection.19.0.1}%
+\contentsline {subsubsection}{\numberline {19.0.2}Hasil Analisis}{31}{subsubsection.19.0.2}%
+\contentsline {subsubsection}{\numberline {19.0.3}Analisis}{31}{subsubsection.19.0.3}%
+\contentsline {section}{\numberline {20}4.9 Pengujian Mode Offline}{32}{section.20}%
+\contentsline {subsubsection}{\numberline {20.0.1}Hasil Pengujian}{33}{subsubsection.20.0.1}%
+\contentsline {section}{\numberline {21}4.10 Ringkasan Hasil Pengujian}{33}{section.21}%
+\contentsline {section}{\numberline {22}4.11 Kesimpulan}{34}{section.22}%

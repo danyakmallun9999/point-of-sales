@@ -464,8 +464,8 @@ export default function Terminal({ products: initialProducts, categories: initia
                     <div className="shrink-0 bg-card border-b border-border px-3 py-2.5 sm:px-4 md:px-6 md:py-3 flex items-center gap-2 sm:gap-3">
                         {/* Brand */}
                         <div className="flex items-center gap-2 shrink-0">
-                            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-primary rounded-lg flex items-center justify-center">
-                                <Coffee className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-primary-foreground" />
+                            <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center">
+                                <img src="/logoPOS.png" alt="Logo" className="w-full h-full object-contain" />
                             </div>
                             <div className="hidden sm:block">
                                 <h1 className="text-base font-black text-foreground leading-none">Brew & Bytes</h1>
