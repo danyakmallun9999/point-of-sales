@@ -7,6 +7,11 @@ Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
+if (! Features::enabled(Features::registration())) {
+    Route::get('/register', fn () => abort(404))->name('register');
+    Route::post('/register', fn () => abort(404))->name('register.store');
+}
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
