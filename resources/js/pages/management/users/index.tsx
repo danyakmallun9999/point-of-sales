@@ -1,5 +1,5 @@
-import { Head, useForm } from '@inertiajs/react';
-import { Edit, Plus, Trash2, UserCog, ShieldCheck, ShieldAlert, User } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { Edit, Plus, Trash2, ShieldCheck, ShieldAlert, User } from 'lucide-react';
 import { useState } from 'react';
 import { store, update, destroy } from '@/actions/App/Http/Controllers/UserController';
 import { Badge } from '@/components/ui/badge';
@@ -95,7 +95,7 @@ export default function UserIndex({ users, outlets }: Props) {
 
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this user?')) {
-            useForm().delete(destroy(id).url);
+            router.delete(destroy(id).url);
         }
     };
 

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableRow as TableRowComponent, TableCell as TableCellComponent } from '@/components/ui/table';
+import { Table, TableBody, TableHead, TableHeader, TableRow as TableRowComponent, TableCell as TableCellComponent } from '@/components/ui/table';
 
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 

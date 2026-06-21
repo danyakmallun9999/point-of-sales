@@ -1,9 +1,9 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Edit, Plus, Trash2, Folder } from 'lucide-react';
 import { useState } from 'react';
 import { store, update, destroy } from '@/actions/App/Http/Controllers/CategoryController';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -63,7 +63,7 @@ export default function CategoryIndex({ categories }: Props) {
 
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this category?')) {
-            useForm().delete(destroy(id).url);
+            router.delete(destroy(id).url);
         }
     };
 

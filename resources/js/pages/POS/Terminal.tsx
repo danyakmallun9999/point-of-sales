@@ -1,6 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { Coffee, Plus, Minus, Trash2, Search, QrCode, Banknote, Loader2, CheckCircle2, WifiOff, RefreshCw, Printer, X, ShoppingBag, Clock, Lock, ShieldAlert, AlertTriangle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createQrisCharge, checkStatus } from '@/actions/App/Http/Controllers/PaymentController';
 import { store as storeOrder } from '@/actions/App/Http/Controllers/POSController';
 import { AppShell } from '@/components/app-shell';
@@ -112,21 +112,21 @@ export default function Terminal({ products: initialProducts, categories: initia
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
         };
-    }, [isOnline, initialProducts, initialCategories]);
+    }, [isOnline, initialProducts, initialCategories, pushUnsyncedOrders, loadOfflineCatalog]);
 
-    const loadOfflineCatalog = async () => {
+    const loadOfflineCatalog = useCallback(async () => {
         const { products: p, categories: c } = await getOfflineCatalog();
         if (p.length > 0) setProducts(p);
         if (c.length > 0) setCategories(c);
-    };
+    }, []);
 
     const [failedOrders, setFailedOrders] = useState<any[]>([]);
     const [showConflictModal, setShowConflictModal] = useState(false);
 
-    const loadFailedOrders = async () => {
+    const loadFailedOrders = useCallback(async () => {
         const failed = await getFailedOrders();
         setFailedOrders(failed);
-    };
+    }, []);
 
     const handleResolveConflict = async (id: number) => {
         if (confirm('Batalkan pesanan offline ini dan lakukan refund (hapus dari database lokal)?')) {
@@ -142,9 +142,9 @@ export default function Terminal({ products: initialProducts, categories: initia
 
     useEffect(() => {
         loadFailedOrders();
-    }, []);
+    }, [loadFailedOrders]);
 
-    const pushUnsyncedOrders = async () => {
+    const pushUnsyncedOrders = useCallback(async () => {
         const unsynced = await getUnsyncedOrders();
         if (unsynced.length === 0) {
             return;
@@ -200,7 +200,7 @@ export default function Terminal({ products: initialProducts, categories: initia
         }
 
         setTimeout(() => setToast(null), 5000);
-    };
+    }, [loadFailedOrders]);
 
     const addToCart = (product: Product) => {
         const existing = cart.find((item) => item.id === product.id);

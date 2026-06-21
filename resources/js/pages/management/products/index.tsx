@@ -1,9 +1,9 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
-import { Edit, Plus, Trash2, Coffee, ImageIcon, Layers, Package, Loader2 } from 'lucide-react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Edit, Plus, Trash2, Coffee, Layers, Package, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { store, update, destroy } from '@/actions/App/Http/Controllers/ProductController';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -144,7 +144,7 @@ export default function ProductIndex({ products, categories }: Props) {
 
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this product?')) {
-            useForm().delete(destroy(id).url);
+            router.delete(destroy(id).url);
         }
     };
 

@@ -1,12 +1,13 @@
 import { Head } from '@inertiajs/react';
 import { BrainCircuit, Info, TrendingUp, BarChart as ChartIcon } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
-import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent  } from '@/components/ui/chart';
+import type {ChartConfig} from '@/components/ui/chart';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 
 interface AprioriInsight {
     antecedent: string;

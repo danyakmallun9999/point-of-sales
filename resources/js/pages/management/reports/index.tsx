@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { Download, FileDown, TrendingUp, TrendingDown, Filter, Printer, Clock } from 'lucide-react';
+import { Download, FileDown, TrendingUp, Filter, Printer, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

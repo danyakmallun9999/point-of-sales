@@ -13,12 +13,12 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as analyticsIndex } from '@/routes/management/analytics';
 import { index as categoryIndex } from '@/routes/management/categories';
 import { index as productIndex } from '@/routes/management/products';
 import { index as reportIndex } from '@/routes/management/reports';
-import { index as analyticsIndex } from '@/routes/management/analytics';
-import { index as userIndex } from '@/routes/management/users';
 import { index as settingsIndex } from '@/routes/management/settings';
+import { index as userIndex } from '@/routes/management/users';
 import { terminal } from '@/routes/pos';
 import type { NavItem } from '@/types';
 
